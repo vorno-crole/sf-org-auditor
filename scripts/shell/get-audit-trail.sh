@@ -124,7 +124,7 @@ while read -r line ; do
 			# add "Id," to start of line
 			# echo "Id,$line" > $FILENAME2
 
-		echo "Hash__c,Date_str__c,User__c,Source_Namespace_Prefix__c,Action__c,Section__c,Delegate_User__c"  > $FILENAME2
+		echo "Hash__c,Date_str__c,User__c,Source_Namespace_Prefix__c,Action__c,Section__c,Delegate_User__c,Org_Name__c"  > $FILENAME2
 
 	else
 		# line 2+:  compute and add hash to start of line
@@ -133,7 +133,7 @@ while read -r line ; do
 		# get field 1 (date)
 		datestr="$(echo "$line" | cut -d "," -f 1 | tr -d '"')"
 
-		echo "\"$datestr-$hash\",$line" >> $FILENAME2
+		echo "\"$datestr-$hash\",$line,${ORG_NAME}" >> $FILENAME2
 	fi
 done < $FILENAME
 
