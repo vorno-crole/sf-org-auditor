@@ -43,3 +43,8 @@ $RECYCLE.BIN/
 **/__pycache__/
 **/.venv/
 **/venv/
+
+# Vorno
+vc
+vc*
+tmp/

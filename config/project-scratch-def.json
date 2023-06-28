@@ -1,13 +1,11 @@
 {
-  "orgName": "VC",
-  "edition": "Developer",
+  "orgName": "VC Org",
+  "edition": "Enterprise",
   "features": ["EnableSetPasswordInApi"],
   "settings": {
     "lightningExperienceSettings": {
       "enableS1DesktopEnabled": true
-    },
-    "mobileSettings": {
-      "enableS1EncryptedStoragePref2": false
     }
-  }
+  },
+  "hasSampleData": true
 }
