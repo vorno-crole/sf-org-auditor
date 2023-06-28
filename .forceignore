@@ -12,4 +12,4 @@ package.xml
 **/__tests__/**
 
 # VC
-force-app/main/default/profiles/Admin.profile-meta.xml
+force-app/main/default/profiles/**

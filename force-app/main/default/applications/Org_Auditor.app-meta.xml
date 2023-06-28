@@ -15,6 +15,7 @@
     <navType>Standard</navType>
     <tabs>standard-home</tabs>
     <tabs>Audit_Log__c</tabs>
+    <tabs>Audit_Rule__c</tabs>
     <tabs>standard-report</tabs>
     <tabs>standard-Dashboard</tabs>
     <uiType>Lightning</uiType>
