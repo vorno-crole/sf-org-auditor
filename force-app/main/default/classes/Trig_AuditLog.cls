@@ -1,0 +1,71 @@
+public with sharing class Trig_AuditLog extends UtilTrigHandle
+{
+	// *********************************************************************
+	// *** Trigger settings
+	// Ensure this is set to the object API name.
+	public override String getTriggerObject() { return 'Audit_Log'; }
+
+	public static Boolean TrigDisabled = false;
+	public override Boolean getTrigDisabled() { return TrigDisabled; }
+
+
+	// *********************************************************************
+	// *** Trigger contexts
+	public override void BeforeInsert(List<SObject> newSObjs)
+	{
+		checkApplyRules((List<Audit_Log__c>)newSObjs);
+	}
+
+	public override void BeforeUpdate(Map<Id, SObject> newSObjs, Map<Id, SObject> oldSObjs)
+	{
+		checkApplyRules((List<Audit_Log__c>)newSObjs.values());
+	}
+
+	// if context is not implemented, condense into one-liners
+	public override void BeforeDelete(Map<Id, SObject> oldSObjs) {}
+	public override void AfterInsert(Map<Id, SObject> newSObjs) {}
+	public override void AfterUpdate(Map<Id, SObject> newSObjs, Map<Id, SObject> oldSObjs) {}
+	public override void AfterDelete(Map<Id, SObject> oldSObjs) {}
+	public override void AfterUndelete(Map<Id, SObject> oldSObjs) {}
+
+
+	// *********************************************************************
+	// *** Trigger methods
+	private static String CatchAllStatus = AL_Strings.LOG_STATUS_BAD;
+
+
+	@testvisible private void checkApplyRules(List<Audit_Log__c> newLogItems)
+	{
+		if (newLogItems == null || newLogItems.isEmpty()) return;
+
+		List<Audit_Log__c> qualified = new List<Audit_Log__c>();
+		for (Audit_Log__c log: newLogItems)
+		{
+			if (log.Status__c == AL_Strings.LOG_STATUS_NEW)
+				qualified.add(log);
+		}
+
+		if (!qualified.isEmpty()) applyRules(qualified);
+	}
+
+	@testvisible private void applyRules(List<Audit_Log__c> logItems)
+	{
+		for (Audit_Log__c log: logItems)
+		{
+			String newStatus;
+
+			// Rule 1:
+			if (log.User__c != null && log.User__c.startsWith('deployment@ausnetservices.com.au'))
+			{
+				// this is ok
+				newStatus = AL_Strings.LOG_STATUS_GOOD;
+			}
+
+			// catch all
+			if (newStatus == null)
+				newStatus = CatchAllStatus;
+
+			log.Status__c = newStatus;
+		}
+	}
+}
