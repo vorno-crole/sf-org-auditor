@@ -68,7 +68,6 @@ rm -f .org_display
 # Deploy
 # sfdx force:mdapi:deploy -d packages -w -1
 sfdx project:deploy:start -o ${ORG_NAME}
-sfdx force:org:open -o ${ORG_NAME}
 
 # Set up user
 	# sfdx data:query -o ${ORG_NAME} -q "SELECT Id, Username FROM User WHERE Username='${USER_NAME}'" --json > .user_query
@@ -79,6 +78,7 @@ sfdx force:org:open -o ${ORG_NAME}
 	scripts/shell/assign-perm-sets.sh -o ${ORG_NAME} --username ${USER_NAME}
 
 
+sfdx force:org:open -o ${ORG_NAME}
 
 
 echo -e "${GREEN}Success.${RESTORE} Complete."
