@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # Setup
 	# set -e
 	# set -o pipefail

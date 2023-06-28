@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Section__c</fullName>
+    <externalId>false</externalId>
+    <label>Section</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Apex Class</fullName>
+                <default>false</default>
+                <label>Apex Class</label>
+            </value>
+            <value>
+                <fullName>Apex Trigger</fullName>
+                <default>false</default>
+                <label>Apex Trigger</label>
+            </value>
+            <value>
+                <fullName>Custom Apps</fullName>
+                <default>false</default>
+                <label>Custom Apps</label>
+            </value>
+            <value>
+                <fullName>Customize Accounts</fullName>
+                <default>false</default>
+                <label>Customize Accounts</label>
+            </value>
+            <value>
+                <fullName>Customize Campaigns</fullName>
+                <default>false</default>
+                <label>Customize Campaigns</label>
+            </value>
+            <value>
+                <fullName>Customize Contacts</fullName>
+                <default>false</default>
+                <label>Customize Contacts</label>
+            </value>
+            <value>
+                <fullName>Customize Leads</fullName>
+                <default>false</default>
+                <label>Customize Leads</label>
+            </value>
+            <value>
+                <fullName>Customize Users</fullName>
+                <default>false</default>
+                <label>Customize Users</label>
+            </value>
+            <value>
+                <fullName>Custom Objects</fullName>
+                <default>false</default>
+                <label>Custom Objects</label>
+            </value>
+            <value>
+                <fullName>Field Restriction Rule</fullName>
+                <default>false</default>
+                <label>Field Restriction Rule</label>
+            </value>
+            <value>
+                <fullName>Flows</fullName>
+                <default>false</default>
+                <label>Flows</label>
+            </value>
+            <value>
+                <fullName>Lightning Components</fullName>
+                <default>false</default>
+                <label>Lightning Components</label>
+            </value>
+            <value>
+                <fullName>Lightning Pages</fullName>
+                <default>false</default>
+                <label>Lightning Pages</label>
+            </value>
+            <value>
+                <fullName>Manage Users</fullName>
+                <default>false</default>
+                <label>Manage Users</label>
+            </value>
+            <value>
+                <fullName>Matching Rule</fullName>
+                <default>false</default>
+                <label>Matching Rule</label>
+            </value>
+            <value>
+                <fullName>Page</fullName>
+                <default>false</default>
+                <label>Page</label>
+            </value>
+            <value>
+                <fullName>Security Controls</fullName>
+                <default>false</default>
+                <label>Security Controls</label>
+            </value>
+            <value>
+                <fullName>Sharing Defaults</fullName>
+                <default>false</default>
+                <label>Sharing Defaults</label>
+            </value>
+            <value>
+                <fullName>Sharing Rules</fullName>
+                <default>false</default>
+                <label>Sharing Rules</label>
+            </value>
+            <value>
+                <fullName>Static Resource</fullName>
+                <default>false</default>
+                <label>Static Resource</label>
+            </value>
+            <value>
+                <fullName>Track Field History</fullName>
+                <default>false</default>
+                <label>Track Field History</label>
+            </value>
+            <value>
+                <fullName>Workflow Rule</fullName>
+                <default>false</default>
+                <label>Workflow Rule</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>
