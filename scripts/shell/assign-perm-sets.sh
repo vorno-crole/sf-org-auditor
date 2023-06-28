@@ -13,11 +13,11 @@
 	USAGE="$0 -o <org-name>"
 	ORG_NAME=""
 
-	SCRATCH_DEF="project-scratch-def.json"
+    USER_NAME=""
 
 	title()
 	{
-		echo -e "${GRN}*** ${WHT}Create Scratch Org script v${VERSION}${RES}\nby ${GRN}vc@vaughancrole.com${RES}\n"
+		echo -e "${GRN}*** ${WHT}Assign Permission Sets script v${VERSION}${RES}\nby ${GRN}vc@vaughancrole.com${RES}\n"
 	}
 	export -f title
 
@@ -35,6 +35,9 @@
 			-h | --help) title
 						 echo -e "$USAGE"
 						 exit 0;;
+            
+            --username) USER_NAME="$2"
+				shift;;
 
 			*) title
 			   echo -e "${RED}*** Error: ${RES}Invalid option: ${WHITE}$1${RES}. See usage:"
@@ -53,34 +56,27 @@
 
 title
 echo -e "${GRN}*${RES} Org name: ${WHT}$ORG_NAME${RES}"
-echo -e "${GRN}*${RES} Scratch Org Definition: ${WHT}$SCRATCH_DEF${RES}\n"
+
+if [[ $USER_NAME == "" ]]; then 
+    # Get current user name
+    sfdx org:display -o ${ORG_NAME} > .org_display
+    USER_NAME="$(grep -E "^ ?Username" .org_display | awk '{print $2}')"
+    rm -f .org_display
+fi
+
+echo -e "${GRN}*${RES} Username: ${WHT}$USER_NAME${RES}"
+
+# find perm sets
+find force-app/main/default/permissionsets -type f | xargs basename -s .permissionset-meta.xml >> .perm_sets
+
+# assign all perm sets to user
+while read -r PERM_SET ; do
+    sfdx org:assign:permset -n ${PERM_SET} -o ${ORG_NAME} -b ${USER_NAME}
+done < .perm_sets
+rm -f .perm_sets
 
 
-cd "$(dirname "$BASH_SOURCE")"
-
-# Create org
-sfdx force:org:create -f ${SCRATCH_DEF} -d 30 -a ${ORG_NAME} -s
-sfdx org:display -o ${ORG_NAME} | tee .org_display
-USER_NAME="$(grep -E "^ ?Username" .org_display | awk '{print $2}')"
-rm -f .org_display
-
-
-# Deploy
-# sfdx force:mdapi:deploy -d packages -w -1
-sfdx project:deploy:start -o ${ORG_NAME}
-sfdx force:org:open -o ${ORG_NAME}
-
-# Set up user
-	# sfdx data:query -o ${ORG_NAME} -q "SELECT Id, Username FROM User WHERE Username='${USER_NAME}'" --json > .user_query
-	# USER_ID="$(grep '"Id"' .user_query | cut -d "\"" -f 4)"
-	# rm -f .user_query
-
-	# Perm sets
-	scripts/shell/assign-perm-sets.sh -o ${ORG_NAME} --username ${USER_NAME}
-
-
-
-
+echo -e ""
 echo -e "${GREEN}Success.${RESTORE} Complete."
 
 echo -e "Time taken: ${SECONDS} seconds.\n"

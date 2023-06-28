@@ -18,5 +18,4 @@
     <tabs>standard-report</tabs>
     <tabs>standard-Dashboard</tabs>
     <uiType>Lightning</uiType>
-    <utilityBar>Org_Auditor_UtilityBar</utilityBar>
 </CustomApplication>
