@@ -13,7 +13,7 @@
 	USAGE="$0 -o <org-name>"
 	ORG_NAME=""
 
-	SCRATCH_DEF="project-scratch-def.json"
+	SCRATCH_DEF="config/project-scratch-def.json"
 
 	title()
 	{
@@ -57,6 +57,7 @@ echo -e "${GRN}*${RES} Scratch Org Definition: ${WHT}$SCRATCH_DEF${RES}\n"
 
 
 cd "$(dirname "$BASH_SOURCE")"
+cd ..
 
 # Create org
 sfdx force:org:create -f ${SCRATCH_DEF} -d 30 -a ${ORG_NAME} -s
@@ -82,7 +83,7 @@ sfdx project:deploy:start -o ${ORG_NAME}
 data/import-all.sh -o ${ORG_NAME}
 
 # open org
-sfdx force:org:open -o ${ORG_NAME}
+sfdx org:open -o ${ORG_NAME}
 
 
 echo -e "${GREEN}Success.${RESTORE} Complete."
