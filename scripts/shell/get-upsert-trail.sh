@@ -13,7 +13,7 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 	RES="\033[0m"
 	VERSION="1.0"
 	SCRIPT_NAME="Get and Upsert Audit Trail CSV"
-	USAGE="$0 -o org-name"
+	USAGE="$0 --source org-name -o target-org-name"
 
 	UPSERT_ORG_NAME=""
 	GET_ORG_NAME="uomAT"
@@ -36,7 +36,10 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 	# read args
 		while [ $# -gt 0 ] ; do
 			case $1 in
-				-u | -o) UPSERT_ORG_NAME="$2"
+				-u | -o | --target-org) UPSERT_ORG_NAME="$2"
+					shift;;
+
+				--source | -s) GET_ORG_NAME="$2"
 					shift;;
 
 				-h | --help) title
@@ -61,7 +64,7 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 
 # header
 	title
-	echo -e "Get Org name: ${WHT}${GET_ORG_NAME}${RES}"
+	echo -e "Source Org name: ${WHT}${GET_ORG_NAME}${RES}"
 	echo -e "Upsert Org name: ${WHT}${UPSERT_ORG_NAME}${RES}"
 # end header
 
