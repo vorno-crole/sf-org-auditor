@@ -59,7 +59,11 @@ public with sharing class Trig_AuditLog extends UtilTrigHandle
 
 			// catch all
 			if (perm == null)
-				newStatus = CatchAllStatus;
+			{
+				//newStatus = CatchAllStatus;
+				System.debug('applyRules: permission is null. Skipping record.');
+				continue;
+			}
 
 			if (perm == Rule_Processor.Permission.ALLOW)
 			{
