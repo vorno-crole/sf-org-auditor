@@ -54,16 +54,23 @@ public with sharing class Trig_AuditLog extends UtilTrigHandle
 		{
 			String newStatus;
 
-			// Rule 1:
-			if (log.User__c != null && log.User__c.startsWith('deployment@ausnetservices.com.au'))
+			// run rules
+			Rule_Processor.Permission perm = Rule_Processor.getRP().checkLog(log);
+
+			// catch all
+			if (perm == null)
+				newStatus = CatchAllStatus;
+
+			if (perm == Rule_Processor.Permission.ALLOW)
 			{
 				// this is ok
 				newStatus = AL_Strings.LOG_STATUS_GOOD;
 			}
-
-			// catch all
-			if (newStatus == null)
-				newStatus = CatchAllStatus;
+			else if (perm == Rule_Processor.Permission.DENY)
+			{
+				// this is less than ok
+				newStatus = AL_Strings.LOG_STATUS_BAD;
+			}
 
 			log.Status__c = newStatus;
 		}
