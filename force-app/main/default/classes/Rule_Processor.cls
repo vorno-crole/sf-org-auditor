@@ -61,10 +61,10 @@ public with sharing class Rule_Processor
 			String ruleValue = rule.Value__c;
 			String rulePerm  = rule.Permission__c;
 
-			if (ruleCond != null && ruleCond == 'catch all')
+			if (ruleCond != null && ruleCond == AL_Strings.RULE_CONDITION_CATCHALL)
 			{
 				// apply catch all, break;
-				output = ruleValue;
+				output = rulePerm;
 				break;
 			}
 
@@ -82,41 +82,39 @@ public with sharing class Rule_Processor
 
 			if (AL.get(logField) != null) logValue = (String)AL.get(logField);
 
-			switch on ruleCond
+			// Check rules
+			if (ruleCond == AL_Strings.RULE_CONDITION_EQUALS)
 			{
-				when 'equals'
+				if (logValue == ruleValue)
 				{
-					if (logValue == ruleValue)
-					{
-						output = rulePerm;
-						break;
-					}
+					output = rulePerm;
+					break;
 				}
+			}
 
-				when 'does not equal'
+			else if (ruleCond == AL_Strings.RULE_CONDITION_NOT_EQ)
+			{
+				if (logValue != ruleValue)
 				{
-					if (logValue != ruleValue)
-					{
-						output = rulePerm;
-						break;
-					}
+					output = rulePerm;
+					break;
 				}
+			}
 
-				when 'starts with'
+			else if (ruleCond == AL_Strings.RULE_CONDITION_START_W)
+			{
+				if (logValue != null && logValue.startsWith(ruleValue))
 				{
-					if (logValue != null && logValue.startsWith(ruleValue))
-					{
-						output = rulePerm;
-						break;
-					}
+					output = rulePerm;
+					break;
 				}
+			}
 
-				when else
-				{
-					// big error
-					System.debug(System.LoggingLevel.ERROR, 'Error: Rule invalid. Attempting to continue.');
-					continue;
-				}
+			else
+			{
+				// big error
+				System.debug(System.LoggingLevel.ERROR, 'Error: Rule invalid. Attempting to continue.');
+				continue;
 			}
 		}
 
