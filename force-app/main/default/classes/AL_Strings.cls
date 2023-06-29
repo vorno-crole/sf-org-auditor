@@ -7,7 +7,7 @@ public with sharing class AL_Strings
 
 	public static String RULE_CONDITION_EQUALS   = 'equals';
 	public static String RULE_CONDITION_NOT_EQ   = 'does not equal';
-	public static String RULE_CONDITION_START_W  = 'starts with';
+	public static String RULE_CONDITION_STARTS_W = 'starts with';
 	public static String RULE_CONDITION_CATCHALL = 'catch all';
 
 }

@@ -1,4 +1,7 @@
 Sequence__c,Field__c,Condition__c,Value__c,Permission__c
 1,User,starts with,deployment@ausnetservices.com.au,Allow
 2,User,equals,Marketing Cloud,Allow
+3,User,equals,"salesforce.com, inc.",Allow
+4,Section,equals,Manage Users,Allow
+5,User,equals,Automated Process,Allow
 999,,catch all,,Deny

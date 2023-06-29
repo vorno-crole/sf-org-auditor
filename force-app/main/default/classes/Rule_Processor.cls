@@ -101,7 +101,7 @@ public with sharing class Rule_Processor
 				}
 			}
 
-			else if (ruleCond == AL_Strings.RULE_CONDITION_START_W)
+			else if (ruleCond == AL_Strings.RULE_CONDITION_STARTS_W)
 			{
 				if (logValue != null && logValue.startsWith(ruleValue))
 				{
@@ -112,7 +112,7 @@ public with sharing class Rule_Processor
 
 			else
 			{
-				// big error
+				// less big error
 				System.debug(System.LoggingLevel.ERROR, 'Error: Rule Condition invalid ("'+ruleCond+'"). Attempting to continue.');
 				continue;
 			}
