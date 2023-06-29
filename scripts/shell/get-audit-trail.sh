@@ -7,7 +7,7 @@ PAGE_NAME="//setup/org/orgsetupaudit.jsp?setupid=SecurityEvents"
 CURL_OPTS="-c vc/cookiejar -L"
 CURRENT_URL=""
 PREV_URL=""
-FILE_NAME="SetupAuditTrail.csv"
+FILENAME="SetupAuditTrail.csv"
 AUTO_OPEN="FALSE"
 
 sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
@@ -98,7 +98,7 @@ CURRENT_URL="$(sed "s/\&amp;/\&/g" <<< "${CURRENT_URL}")"
 echo -e "- ${CURRENT_URL}\n"
 
 # Follow the CSV link
-FILENAME="SetupAuditTrail-${ORG_NAME}-$(date +"%d-%b-%Y").csv"
+# FILENAME="SetupAuditTrail-${ORG_NAME}-$(date +"%d-%b-%Y").csv"
 curl ${CURL_OPTS} -b vc/cookiejar -J -o ${FILENAME} -e ${PREV_URL} ${CURRENT_URL}
 echo ""
 
