@@ -75,6 +75,8 @@ public with sharing class Rule_Processor
 				return null;
 			}
 
+			if (ruleValue == 'null') ruleValue = null;
+
 			String logField = fieldMap.get(ruleField);
 			String logValue;
 
@@ -102,7 +104,7 @@ public with sharing class Rule_Processor
 
 				when 'starts with'
 				{
-					if (logValue.startsWith(ruleValue))
+					if (logValue != null && logValue.startsWith(ruleValue))
 					{
 						output = rulePerm;
 						break;
