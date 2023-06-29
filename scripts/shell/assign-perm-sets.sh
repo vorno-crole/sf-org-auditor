@@ -13,7 +13,7 @@
 	USAGE="$0 -o <org-name>"
 	ORG_NAME=""
 
-    USER_NAME=""
+	USER_NAME=""
 
 	title()
 	{
@@ -35,8 +35,8 @@
 			-h | --help) title
 						 echo -e "$USAGE"
 						 exit 0;;
-            
-            --username) USER_NAME="$2"
+			
+			--username) USER_NAME="$2"
 				shift;;
 
 			*) title
@@ -58,10 +58,10 @@ title
 echo -e "${GRN}*${RES} Org name: ${WHT}$ORG_NAME${RES}"
 
 if [[ $USER_NAME == "" ]]; then 
-    # Get current user name
-    sfdx org:display -o ${ORG_NAME} > .org_display
-    USER_NAME="$(grep -E "^ ?Username" .org_display | awk '{print $2}')"
-    rm -f .org_display
+	# Get current user name
+	sfdx org:display -o ${ORG_NAME} > .org_display
+	USER_NAME="$(grep -E "^ ?Username" .org_display | awk '{print $2}')"
+	rm -f .org_display
 fi
 
 echo -e "${GRN}*${RES} Username: ${WHT}$USER_NAME${RES}"
@@ -71,7 +71,7 @@ find force-app/main/default/permissionsets -type f | xargs basename -s .permissi
 
 # assign all perm sets to user
 while read -r PERM_SET ; do
-    sfdx org:assign:permset -n ${PERM_SET} -o ${ORG_NAME} -b ${USER_NAME}
+	sfdx org:assign:permset -n ${PERM_SET} -o ${ORG_NAME} -b ${USER_NAME}
 done < .perm_sets
 rm -f .perm_sets
 
