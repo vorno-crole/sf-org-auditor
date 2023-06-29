@@ -78,6 +78,10 @@ sfdx project:deploy:start -o ${ORG_NAME}
 	scripts/shell/assign-perm-sets.sh -o ${ORG_NAME} --username ${USER_NAME}
 
 
+# data
+data/import-all.sh -o ${ORG_NAME}
+
+# open org
 sfdx force:org:open -o ${ORG_NAME}
 
 
