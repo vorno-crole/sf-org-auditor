@@ -113,7 +113,7 @@ public with sharing class Rule_Processor
 			else
 			{
 				// big error
-				System.debug(System.LoggingLevel.ERROR, 'Error: Rule invalid. Attempting to continue.');
+				System.debug(System.LoggingLevel.ERROR, 'Error: Rule Condition invalid ("'+ruleCond+'"). Attempting to continue.');
 				continue;
 			}
 		}
