@@ -1,6 +1,7 @@
 # Salesforce Org Auditor
 
-Salesforce Org Auditor - monitor and report on changes to your orgs
+Salesforce Org Auditor - monitor and report on unauthorised changes to your orgs  
+
 
 
 ## Key features:
@@ -58,7 +59,7 @@ scripts/shell/assign-perm-sets.sh -o ORG_NAME
 
 * Or via Salesforce Setup:
     * Open your org
-    * Go to Setup > Users > Permission Sets
+    * Go to Setup > Users > **Permission Sets**
     * Open the `SF Org Auditor` Permission Set
     * Click **Manage Assignments**
     * Click **Add Assignments**
