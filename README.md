@@ -15,6 +15,7 @@ Salesforce Org Auditor - monitor and report on changes to your orgs
 - Integrate notifications into Slack
 
 <p><br/></p>
+
 ## How to Install
 
 
@@ -44,6 +45,7 @@ sfdx project:deploy:start -o ORG_NAME
 ```
 
 <p><br/></p>
+
 ## Post-Install Configuration
 
 
@@ -82,6 +84,7 @@ data/import-all.sh -o ORG_NAME
 Note: You will probably want to do this step continuously, as your logs are loaded and you review and tune Org Auditor to allow or deny different log items.
 
 <p><br/></p>
+
 ## How to Use
 
 
@@ -100,6 +103,7 @@ scripts/shell/get-upsert-trail.sh --source SOURCE_ORG_NAME -o ORG_NAME
 
 
 <p><br/></p>
+
 ## How to contribute to this module
 
 #### Prerequisites
