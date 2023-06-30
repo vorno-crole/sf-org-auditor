@@ -13,6 +13,7 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 	RES="\033[0m"
 	VERSION="1.0"
 	SCRIPT_NAME="Upsert Audit Trail CSV"
+	AUTHOR="vc@vaughancrole.com"
 	USAGE="$0 -o org-name --filename file.csv"
 
 	ORG_NAME=""
@@ -30,7 +31,7 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 
 		title()
 		{
-			echo -e "${GRN}*** ${WHT}${SCRIPT_NAME} script v${VERSION}${RES}\nby ${GRN}vaughan.crole@au1.ibm.com${RES}\n"
+			echo -e "${GRN}*** ${WHT}${SCRIPT_NAME} script v${VERSION}${RES}\nby ${GRN}${AUTHOR}${RES}\n"
 		}
 		export -f title
 	# end functions

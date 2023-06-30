@@ -22,6 +22,7 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 	RED="\033[91;1m"
 	RESTORE="\033[0m"
 	VERSION="0.2 alpha"
+	AUTHOR="vc@vaughancrole.com"
 	USAGE="$0 -o org-name [--open-file]"
 
 	# functions
@@ -33,7 +34,7 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 
 		title()
 		{
-			echo -e "${GREEN}*** ${WHITE}Get Audit Trail CSV script v${VERSION}${RESTORE}\nby ${GREEN}vaughan.crole@au1.ibm.com${RESTORE}\n"
+			echo -e "${GREEN}*** ${WHITE}Get Audit Trail CSV script v${VERSION}${RESTORE}\nby ${GREEN}${AUTHOR}${RESTORE}\n"
 		}
 		export -f title
 	# end functions
