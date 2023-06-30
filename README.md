@@ -99,7 +99,11 @@ scripts/shell/get-upsert-trail.sh --source SOURCE_ORG_NAME -o ORG_NAME
 
 #### Step 2: Monitor the changes in your reporting org
 
-* Open Salesforce and view the **Auditor Dashboard**!
+* Open your org
+* Ensure you are in the **Org Auditor** app
+* Open the **Dashboards** tab
+* Click on **All Folders**, then open the **Auditor Dashboards** folder
+* Open the **Auditor Dashboard**
 
 
 <p><br/></p>
