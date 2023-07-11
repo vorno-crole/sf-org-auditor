@@ -11,7 +11,6 @@ Salesforce Org Auditor - monitor and report on unauthorised changes to your orgs
 - 
 
 ## Potential future enhancements
-- Sometimes bug: Some CSV lines are flat out duplicates (same D/T, same content)
 - Run periodically
 - Send email alerts on unauthorised changes
 - Integrate notifications into Slack
