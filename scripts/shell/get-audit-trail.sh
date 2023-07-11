@@ -138,8 +138,6 @@ while read -r line ; do
 
 		# Some CSV rows are multiline. Need to identify these lines and process accordingly
 		# Check if line starts with reg ex....
-			# '^"[[:digit:]]{1,2}/[[:digit:]]{1,2}/[[:digit:]]{4} [[:digit:]]{1,2}:[[:digit:]]{1,2}:[[:digit:]]{1,2} (AM|PM)",'
-
 		if echo "$line" | grep -q -E '^"[[:digit:]]{1,2}/[[:digit:]]{1,2}/[[:digit:]]{4} [[:digit:]]{1,2}:[[:digit:]]{1,2}:[[:digit:]]{1,2} (AM|PM)",'; then
 			hash="$(echo "$line" | sha1sum | cut -d " " -f 1)"
 
