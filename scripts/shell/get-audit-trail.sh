@@ -116,6 +116,7 @@ echo -e "- Generating IDs\n"
 linenum=0
 FILENAME2="${FILENAME}2"
 rm -f $FILENAME2
+prior_line=""
 while read -r line ; do
 	((linenum=linenum+1))
 	# echo $linenum
@@ -129,6 +130,11 @@ while read -r line ; do
 
 	else
 		# line 2+:  compute and add hash to start of line
+
+		# Check for duplicate lines
+		if [[ "$prior_line" == "$line" ]]; then
+			continue;
+		fi
 
 		# Some CSV rows are multiline. Need to identify these lines and process accordingly
 		# Check if line starts with reg ex....
@@ -145,8 +151,9 @@ while read -r line ; do
 			echo "$line" >> $FILENAME2
 
 		fi
-	
 	fi
+
+	prior_line="$line"
 done < $FILENAME
 
 mv $FILENAME2 $FILENAME
