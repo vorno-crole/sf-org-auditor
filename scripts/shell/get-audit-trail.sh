@@ -125,16 +125,27 @@ while read -r line ; do
 			# add "Id," to start of line
 			# echo "Id,$line" > $FILENAME2
 
-		echo "Hash__c,Date_str__c,User__c,Source_Namespace_Prefix__c,Action__c,Section__c,Delegate_User__c,Org_Name__c"  > $FILENAME2
+		echo "Hash__c,Org_Name__c,Date_str__c,User__c,Source_Namespace_Prefix__c,Action__c,Section__c,Delegate_User__c"  > $FILENAME2
 
 	else
 		# line 2+:  compute and add hash to start of line
-		hash="$(echo "$line" | sha1sum | cut -d " " -f 1)"
 
-		# get field 1 (date)
-		datestr="$(echo "$line" | cut -d "," -f 1 | tr -d '"')"
+		# Some CSV rows are multiline. Need to identify these lines and process accordingly
+		# Check if line starts with reg ex....
+			# '^"[[:digit:]]{1,2}/[[:digit:]]{1,2}/[[:digit:]]{4} [[:digit:]]{1,2}:[[:digit:]]{1,2}:[[:digit:]]{1,2} (AM|PM)",'
 
-		echo "\"$datestr-$hash\",$line,${ORG_NAME}" >> $FILENAME2
+		if echo "$line" | grep -q -E '^"[[:digit:]]{1,2}/[[:digit:]]{1,2}/[[:digit:]]{4} [[:digit:]]{1,2}:[[:digit:]]{1,2}:[[:digit:]]{1,2} (AM|PM)",'; then
+			hash="$(echo "$line" | sha1sum | cut -d " " -f 1)"
+
+			# get field 1 (date)
+			datestr="$(echo "$line" | cut -d "," -f 1 | tr -d '"')"
+
+			echo "\"$datestr-$hash\",${ORG_NAME},$line" >> $FILENAME2
+		else
+			echo "$line" >> $FILENAME2
+
+		fi
+	
 	fi
 done < $FILENAME
 
