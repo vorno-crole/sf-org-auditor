@@ -2,7 +2,7 @@
 <ListView xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Bad_Audit_Logs</fullName>
     <columns>NAME</columns>
-    <columns>Date_str__c</columns>
+    <columns>Date__c</columns>
     <columns>Org_Name__c</columns>
     <columns>User__c</columns>
     <columns>Section__c</columns>

@@ -7,7 +7,7 @@
         <field>CUST_CREATED_DATE</field>
     </columns>
     <columns>
-        <field>Audit_Log__c.Date_str__c</field>
+        <field>Audit_Log__c.Date__c</field>
     </columns>
     <columns>
         <field>Audit_Log__c.Org_Name__c</field>

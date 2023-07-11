@@ -13,11 +13,13 @@ public with sharing class Trig_AuditLog extends UtilTrigHandle
 	// *** Trigger contexts
 	public override void BeforeInsert(List<SObject> newSObjs)
 	{
+		setDateField((List<Audit_Log__c>)newSObjs);
 		checkApplyRules((List<Audit_Log__c>)newSObjs);
 	}
 
 	public override void BeforeUpdate(Map<Id, SObject> newSObjs, Map<Id, SObject> oldSObjs)
 	{
+		setDateField((List<Audit_Log__c>)newSObjs.values());
 		checkApplyRules((List<Audit_Log__c>)newSObjs.values());
 	}
 
@@ -32,7 +34,6 @@ public with sharing class Trig_AuditLog extends UtilTrigHandle
 	// *********************************************************************
 	// *** Trigger methods
 	private static String CatchAllStatus = AL_Strings.LOG_STATUS_BAD;
-
 
 	@testvisible private void checkApplyRules(List<Audit_Log__c> newLogItems)
 	{
@@ -77,6 +78,38 @@ public with sharing class Trig_AuditLog extends UtilTrigHandle
 			}
 
 			log.Status__c = newStatus;
+		}
+	}
+
+	@testvisible private void setDateField(List<Audit_Log__c> logItems)
+	{
+		for (Audit_Log__c log: logItems)
+		{
+			if (log.Date_str__c != null && log.Date__c == null)
+			{
+				// Create a Datetime value from the date string
+				// "7/07/2023 10:45:24 AM"
+				String dateStr = log.Date_str__c;
+
+				List<String> DT_Parts = dateStr.split(' '); // 0: date 1: time 2: am/pm
+				List<String> D_Parts = DT_Parts[0].split('/'); // 0: dd 1: mm 2: yyyy
+				List<String> T_Parts = DT_Parts[1].split(':'); // 0: h 1: m 2: ss
+
+				Integer day = Integer.valueOf(D_Parts[0]);
+				Integer mth = Integer.valueOf(D_Parts[1]);
+				Integer yr  = Integer.valueOf(D_Parts[2]);
+
+				Integer hr  = Integer.valueOf(T_Parts[0]);
+				Integer min = Integer.valueOf(T_Parts[1]);
+				Integer sec = Integer.valueOf(T_Parts[2]);
+
+				if (DT_Parts[2].toLowerCase() == 'pm')
+					hr += 12;
+
+				DateTime dt = DateTime.newInstance(yr, mth, day, hr, min, sec);
+
+				log.Date__c = dt;
+			}
 		}
 	}
 }
