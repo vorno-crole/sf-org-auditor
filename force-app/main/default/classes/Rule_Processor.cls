@@ -71,11 +71,11 @@ public with sharing class Rule_Processor
 			if (ruleField == null || ruleCond == null || ruleValue == null || rulePerm == null)
 			{
 				// big error
-				System.debug(System.LoggingLevel.ERROR, 'Fatal error: Rule invalid. Cannot continue.');
-				return null;
+				System.debug(System.LoggingLevel.ERROR, 'Error: Rule invalid ['+rule.Id+']. Skipping rule...');
+				continue;
 			}
 
-			if (ruleValue == 'null') ruleValue = null;
+			if (ruleValue.toLowerCase() == 'null') ruleValue = null;
 
 			String logField = fieldMap.get(ruleField);
 			String logValue;
