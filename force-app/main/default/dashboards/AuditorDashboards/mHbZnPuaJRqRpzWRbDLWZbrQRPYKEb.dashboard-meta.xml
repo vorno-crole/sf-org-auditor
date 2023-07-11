@@ -95,7 +95,7 @@
                 <flexComponentProperties>
                     <decimalPrecision>-1</decimalPrecision>
                     <flexTableColumn>
-                        <reportColumn>Audit_Log__c.Date_str__c</reportColumn>
+                        <reportColumn>Audit_Log__c.Date__c</reportColumn>
                         <showSubTotal>false</showSubTotal>
                         <showTotal>false</showTotal>
                         <type>detail</type>
@@ -119,7 +119,7 @@
                         <type>detail</type>
                     </flexTableColumn>
                     <flexTableSortInfo>
-                        <sortColumn>Audit_Log__c.Date_str__c</sortColumn>
+                        <sortColumn>Audit_Log__c.Date__c</sortColumn>
                         <sortOrder>2</sortOrder>
                     </flexTableSortInfo>
                     <hideChatterPhotos>true</hideChatterPhotos>
