@@ -59,8 +59,8 @@ echo -e "${GRN}*${RES} Org name: ${WHT}$ORG_NAME${RES}"
 
 if [[ $USER_NAME == "" ]]; then 
 	# Get current user name
-	sfdx org:display -o ${ORG_NAME} > .org_display
-	USER_NAME="$(grep -E "^ ?Username" .org_display | awk '{print $2}')"
+	sf org display -o ${ORG_NAME} --json | tee .org_display
+	USER_NAME="$(jq -r '.result.username' .org_display)"
 	rm -f .org_display
 fi
 
