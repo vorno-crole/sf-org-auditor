@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Setup
-	# set -e
+	set -e
 	# set -o pipefail
 
 	YLW="\033[33;1m"
@@ -12,6 +12,7 @@
 	VERSION="1.0"
 	USAGE="$0 -o <org-name>"
 	ORG_NAME=""
+	DEV_HUB=""
 
 	SCRATCH_DEF="config/project-scratch-def.json"
 
@@ -32,6 +33,9 @@
 			--targetusername | -u | -o) ORG_NAME="$2"
 				shift;;
 
+			--devhub | -d) DEV_HUB="$2"
+				shift;;
+
 			-h | --help) title
 						 echo -e "$USAGE"
 						 exit 0;;
@@ -49,6 +53,10 @@
 		echo -e "${WHT}$USAGE${RES}"
 		exit 1
 	fi
+
+	if [[ $DEV_HUB == "" ]] ; then
+		DEV_HUB="$(sf config get target-dev-hub --json | jq -r '.result[0].value')"
+	fi
 # end setup
 
 title
@@ -60,21 +68,15 @@ cd "$(dirname "$BASH_SOURCE")"
 cd ..
 
 # Create org
-sfdx force:org:create -f ${SCRATCH_DEF} -d 30 -a ${ORG_NAME} -s
-sfdx org:display -o ${ORG_NAME} | tee .org_display
-USER_NAME="$(grep -E "^ ?Username" .org_display | awk '{print $2}')"
+sf org create scratch --definition-file ${SCRATCH_DEF} --duration-days 30 --alias ${ORG_NAME} --set-default --track-source --target-dev-hub ${DEV_HUB}
+sf org display -o ${ORG_NAME} --json | tee .org_display
+USER_NAME="$(jq -r '.result.username' .org_display)"
 rm -f .org_display
 
-
 # Deploy
-# sfdx force:mdapi:deploy -d packages -w -1
-sfdx project:deploy:start -o ${ORG_NAME}
+sf project deploy start -o ${ORG_NAME}
 
 # Set up user
-	# sfdx data:query -o ${ORG_NAME} -q "SELECT Id, Username FROM User WHERE Username='${USER_NAME}'" --json > .user_query
-	# USER_ID="$(grep '"Id"' .user_query | cut -d "\"" -f 4)"
-	# rm -f .user_query
-
 	# Perm sets
 	scripts/shell/assign-perm-sets.sh -o ${ORG_NAME} --username ${USER_NAME}
 
@@ -83,7 +85,7 @@ sfdx project:deploy:start -o ${ORG_NAME}
 data/import-all.sh -o ${ORG_NAME}
 
 # open org
-sfdx org:open -o ${ORG_NAME}
+sf org open -o ${ORG_NAME}
 
 
 echo -e "${GREEN}Success.${RESTORE} Complete."

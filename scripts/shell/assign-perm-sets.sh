@@ -67,13 +67,12 @@ fi
 echo -e "${GRN}*${RES} Username: ${WHT}$USER_NAME${RES}"
 
 # find perm sets
-find force-app/main/default/permissionsets -type f | xargs basename -s .permissionset-meta.xml >> .perm_sets
+mkdir -p .flags
+find force-app/main/default/permissionsets -type f | xargs basename -s .permissionset-meta.xml >> .flags/name
 
 # assign all perm sets to user
-while read -r PERM_SET ; do
-	sfdx org:assign:permset -n ${PERM_SET} -o ${ORG_NAME} -b ${USER_NAME}
-done < .perm_sets
-rm -f .perm_sets
+sf org assign permset --flags-dir .flags -o ${ORG_NAME} -b ${USER_NAME}
+rm -rf .flags
 
 
 echo -e ""
