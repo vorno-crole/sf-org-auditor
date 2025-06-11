@@ -1,13 +1,15 @@
 #!/bin/bash
 SECONDS=0
 
+set -e
 
 ORG_NAME=""
 PAGE_NAME="//setup/org/orgsetupaudit.jsp?setupid=SecurityEvents"
-CURL_OPTS="-c vc/cookiejar -L"
+CURL_OPTS="-c cookiejar -L"
 CURRENT_URL=""
 PREV_URL=""
 FILENAME="SetupAuditTrail.csv"
+FILENAME_JSON="$(basename -s .csv $FILENAME).json"
 AUTO_OPEN="FALSE"
 
 sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
@@ -76,20 +78,19 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 # start here
 
 # tidy
-rm -f vc/cookiejar
+rm -f cookiejar
 
 # Get authentication URL
 echo -e "${GREEN}*${RESTORE} Get authentication URL from SFDX"
-CURRENT_URL="$(sfdx force:org:open -u ${ORG_NAME} -p ${PAGE_NAME} -r 2> /dev/null | ggrep -Eo "https(.+)$")"
+CURRENT_URL="$(sf org open -o ${ORG_NAME} -p ${PAGE_NAME} -r --json 2> /dev/null | jq -r '.result.url' | tee url.txt)"
 echo -e "- ${CURRENT_URL}\n"
-NEXT_URL="$(curl ${CURL_OPTS} ${CURRENT_URL} -s | ggrep -oP -m1 "https://[\w\-\.\/]+" | head -1)"
+NEXT_URL="$(curl ${CURL_OPTS} --url "$(cat url.txt)" --silent | tee curl.log | ggrep -oP -m1 "https://[\w\-\.\/\?=&%]+" | head -1)"
 
 # Follow Javascript redirect, ensure cookies set are transmitted with the request
 echo -e "${GREEN}*${RESTORE} Following Javascript redirect"
 PREV_URL="${CURRENT_URL}"
 CURRENT_URL="${NEXT_URL}"
-echo -e "- ${CURRENT_URL}\n"
-NEXT_URL=$(curl ${CURL_OPTS} -b vc/cookiejar -e ${PREV_URL} ${CURRENT_URL} -s | ggrep SetupAuditTrail | ggrep -oP "href=\"/serv(.+?)\"" | head -1 | cut -d "\"" -f 2)
+NEXT_URL=$(curl ${CURL_OPTS} -b cookiejar -e ${PREV_URL} ${CURRENT_URL} --silent | tee curl2.log | ggrep SetupAuditTrail | ggrep -oP "href=\"/serv(.+?)\"" | head -1 | cut -d "\"" -f 2)
 
 # Find and Construct the CSV URL from PREV_URL host and CURR_URL pathname, also translate &amp; into &
 echo -e "${GREEN}*${RESTORE} Finding CSV URL and downloading"
@@ -100,7 +101,7 @@ echo -e "- ${CURRENT_URL}\n"
 
 # Follow the CSV link
 # FILENAME="SetupAuditTrail-${ORG_NAME}-$(date +"%d-%b-%Y").csv"
-curl ${CURL_OPTS} -b vc/cookiejar -J -o ${FILENAME} -e ${PREV_URL} ${CURRENT_URL}
+curl ${CURL_OPTS} -b cookiejar -J -o ${FILENAME} -e ${PREV_URL} ${CURRENT_URL}
 echo ""
 
 # TODO processing
@@ -110,10 +111,37 @@ echo -e "${GREEN}*${RESTORE} Processing CSV"
 # sed -i '/"vaughan.crole@powercor.com.au.ched.uecat"/d' $FILENAME
 # sed -i '/"Manage Users"/d' $FILENAME
 
+# TODO do we convert to json? yes?
+echo -e "- Convert to JSON\n"
+yq -p csv -o json ${FILENAME} > ${FILENAME_JSON}
+
+
 
 # Generate hash per line for External Id field
 echo -e "- Generating IDs\n"
+
+
+
+# Iterate json
 linenum=0
+while IFS= read -u 10 -r line ; do
+	((linenum=linenum+1))
+	echo $linenum
+
+	# generate hash
+	# add key to structure
+	# add org name to structure
+	# add date string? to structure
+
+	if [[ $linenum -ge 10 ]]; then
+		break;
+	fi
+
+done 10< <(jq -c '.[]' ${FILENAME_JSON})
+
+
+exit 1;
+
 FILENAME2="${FILENAME}2"
 rm -f $FILENAME2
 prior_line=""
