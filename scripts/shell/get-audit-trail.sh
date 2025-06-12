@@ -118,6 +118,8 @@ if [[ $MODE == "download" ]]; then
 	# TODO do we convert to json? yes
 	echo -e "- Convert to JSON\n"
 	yq -p csv -o json ${FILENAME} > ${FILENAME_JSON}
+	jq 'sort_by(.Date_str__c, .User__c, .Action__c)' ${FILENAME_JSON} > ${FILENAME_JSON}2
+	mv ${FILENAME_JSON}2 ${FILENAME_JSON}
 
 	MODE="process"
 fi
@@ -129,7 +131,7 @@ if [[ $MODE == "process" ]]; then
 	rm -f ${FILENAME_JSON}2
 	SECONDS=0
 
-	ORG_URL_NAME="$(sf org display -o ${ORG_NAME} --json 2>/dev/null | jq -r '.result.instanceUrl' .orgInfo.json | cut -d "." -f 1 | cut -c 9-)"
+	ORG_URL_NAME="$(sf org display -o ${ORG_NAME} --json 2>/dev/null | jq -r '.result.instanceUrl' | cut -d "." -f 1 | cut -c 9-)"
 	# ORG_URL_NAME="ausnetservices--preprod"
 	echo -e "Org URL Name: ${ORG_URL_NAME}"
 	SIZE="$(jq 'length' SetupAuditTrail.json)"

@@ -136,7 +136,7 @@ if [[ $NUM_RECS -lt 1000 ]]; then
 	FILENAME="flush-${OBJ_NAME}.apex"
 	rm -rf ${FILENAME}
 	echo "delete [${QUERY}];" > ${FILENAME}
-	dx execute -o ${ORG_NAME} -f ${FILENAME}
+	sf apex run -o ${ORG_NAME} -f ${FILENAME} | grep -E Compiled\|Executed\|Error
 	rm ${FILENAME}
 
 else
