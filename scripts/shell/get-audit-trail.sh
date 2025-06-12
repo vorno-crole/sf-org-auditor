@@ -165,7 +165,7 @@ if [[ $MODE == "process" ]]; then
 		jq -c ". += { hash: \"$datestr-$hash\", orgName: \"$ORG_URL_NAME\" }" <<< "$line" >> ${FILENAME_JSON}2
 		prior_line="$line"
 
-		if [[ $i -ge 100 ]]; then
+		if [[ $i -ge 1000 ]]; then
 			break;
 		fi
 
