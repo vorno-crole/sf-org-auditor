@@ -118,8 +118,8 @@ if [[ $MODE == "download" ]]; then
 	# TODO do we convert to json? yes
 	echo -e "- Convert to JSON\n"
 	yq -p csv -o json ${FILENAME} > ${FILENAME_JSON}
-	jq 'sort_by(.Date_str__c, .User__c, .Action__c)' ${FILENAME_JSON} > ${FILENAME_JSON}2
-	mv ${FILENAME_JSON}2 ${FILENAME_JSON}
+	# jq 'sort_by(.Date_str__c, .User__c, .Action__c)' ${FILENAME_JSON} > ${FILENAME_JSON}2
+	# mv ${FILENAME_JSON}2 ${FILENAME_JSON}
 
 	MODE="process"
 fi
@@ -149,12 +149,12 @@ if [[ $MODE == "process" ]]; then
 		# generate hash
 		hash="$(sha1sum <<< "$line" | cut -d " " -f 1)"
 
-		if [[ $prior_line == "$line" ]]; then
-			hash="${hash}-${prior_count}"
-			((prior_count=prior_count+1))
-		else
-			prior_count=1
-		fi
+		# if [[ $prior_line == "$line" ]]; then
+		# 	hash="${hash}-${prior_count}"
+		# 	((prior_count=prior_count+1))
+		# else
+		# 	prior_count=1
+		# fi
 
 		# get date str
 		datestr="$(jq -r '.Date' <<< "$line")"
@@ -172,6 +172,7 @@ if [[ $MODE == "process" ]]; then
 
 	# Reconstruct JSON back into array
 	echo -e "- Reconstruct JSON back into array\n"
+	sort -u -o ${FILENAME_JSON}2 ${FILENAME_JSON}2
 	jq --slurp '.' ${FILENAME_JSON}2 > ${FILENAME_JSON}3
 	mv ${FILENAME_JSON}3 ${FILENAME_JSON}2
 	# cat ${FILENAME_JSON}2

@@ -34,7 +34,8 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 	# end functions
 
 	# read args
-		while [ $# -gt 0 ] ; do
+		BREAK=""
+		while [[ $# -gt 0 && $BREAK == "" ]]; do
 			case $1 in
 				-u | -o | --target-org) UPSERT_ORG_NAME="$2"
 					shift;;
@@ -45,6 +46,8 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 				-h | --help) title
 							 echo -e $USAGE
 							 exit 0;;
+
+				--) BREAK="TRUE";;
 
 				*) echo -e "${RED}*** ERROR: ${RES}Invalid option: ${WHITE}$1${RES}. See usage:"
 				echo -e $USAGE
@@ -72,7 +75,7 @@ cd "$(dirname "$BASH_SOURCE")"
 cd ../..
 
 # start here
-scripts/shell/get-audit-trail.sh -o ${GET_ORG_NAME}
+scripts/shell/get-audit-trail.sh -o ${GET_ORG_NAME} "$@"
 scripts/shell/upsert-audit-trail.sh -o ${UPSERT_ORG_NAME} --filename ${FILE_NAME}
 
 echo -e "${GRN}Success.${RES} Complete."
