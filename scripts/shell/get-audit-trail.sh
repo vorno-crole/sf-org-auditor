@@ -151,13 +151,6 @@ if [[ $MODE == "process" ]]; then
 		# generate hash
 		hash="$(sha1sum <<< "$line" | cut -d " " -f 1)"
 
-		# if [[ $prior_line == "$line" ]]; then
-		# 	hash="${hash}-${prior_count}"
-		# 	((prior_count=prior_count+1))
-		# else
-		# 	prior_count=1
-		# fi
-
 		# get date str
 		datestr="$(jq -r '.Date' <<< "$line")"
 
@@ -165,9 +158,9 @@ if [[ $MODE == "process" ]]; then
 		jq -c ". += { hash: \"$datestr-$hash\", orgName: \"$ORG_URL_NAME\" }" <<< "$line" >> ${FILENAME_JSON}2
 		prior_line="$line"
 
-		if [[ $i -ge 10000 ]]; then
-			break;
-		fi
+		# if [[ $i -ge 10000 ]]; then
+		# 	break;
+		# fi
 
 	done 10< <(jq -c '.[]' ${FILENAME_JSON})
 	echo ""
