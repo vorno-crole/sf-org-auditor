@@ -206,6 +206,15 @@ if [[ $MODE == "process" ]]; then
 	)' ${FILENAME_JSON}2 > ${FILENAME_JSON}3
 	mv ${FILENAME_JSON}3 ${FILENAME_JSON}2
 
+	# replace nulls with empty strings
+	echo -e "- Replace nulls with empty strings\n"
+	jq 'map(
+	with_entries(
+		if .value == null then .value = "" else . end
+	)
+	)' ${FILENAME_JSON}2 > ${FILENAME_JSON}3
+	mv ${FILENAME_JSON}3 ${FILENAME_JSON}2
+
 	# convert back to CSV
 	echo -e "- convert back to CSV\n"
 	yq -p json -o csv ${FILENAME_JSON}2 > ${FILENAME}2
