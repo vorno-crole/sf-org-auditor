@@ -114,11 +114,8 @@ if [[ $MODE == "download" ]]; then
 	# TODO processing
 	# TODO: Not carriage return safe
 	echo -e "${GREEN}*${RESTORE} Processing CSV"
-	# sed -i '/"deploymentuser@ue./d' $FILENAME
-	# sed -i '/"vaughan.crole@powercor.com.au.ched.uecat"/d' $FILENAME
-	# sed -i '/"Manage Users"/d' $FILENAME
 
-	# TODO do we convert to json? yes?
+	# TODO do we convert to json? yes
 	echo -e "- Convert to JSON\n"
 	yq -p csv -o json ${FILENAME} > ${FILENAME_JSON}
 
@@ -134,10 +131,13 @@ if [[ $MODE == "process" ]]; then
 
 	ORG_URL_NAME="$(sf org display -o ${ORG_NAME} --json 2>/dev/null | jq -r '.result.instanceUrl' .orgInfo.json | cut -d "." -f 1 | cut -c 9-)"
 	# ORG_URL_NAME="ausnetservices--preprod"
+	echo -e "Org URL Name: ${ORG_URL_NAME}"
 	SIZE="$(jq 'length' SetupAuditTrail.json)"
 
 	# Iterate json, process each line
 	i=0
+	prior_line=""
+	prior_count=1
 	while IFS= read -u 10 -r line ; do
 		((i=i+1))
 		# echo "$i : $line"
@@ -147,11 +147,19 @@ if [[ $MODE == "process" ]]; then
 		# generate hash
 		hash="$(sha1sum <<< "$line" | cut -d " " -f 1)"
 
+		if [[ $prior_line == "$line" ]]; then
+			hash="${hash}-${prior_count}"
+			((prior_count=prior_count+1))
+		else
+			prior_count=1
+		fi
+
 		# get date str
 		datestr="$(jq -r '.Date' <<< "$line")"
 
 		# add key to structure
 		jq -c ". += { hash: \"$datestr-$hash\", orgName: \"$ORG_URL_NAME\" }" <<< "$line" >> ${FILENAME_JSON}2
+		prior_line="$line"
 
 		if [[ $i -ge 100 ]]; then
 			break;
@@ -195,7 +203,7 @@ if [[ $MODE == "process" ]]; then
 
 	# convert back to CSV
 	echo -e "- convert back to CSV\n"
-	yq -p json -o csv S${FILENAME_JSON}2 > $FILENAME
+	yq -p json -o csv ${FILENAME_JSON}2 > ${FILENAME}2
 fi
 
 

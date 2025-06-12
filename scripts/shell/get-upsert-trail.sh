@@ -17,7 +17,7 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 
 	UPSERT_ORG_NAME=""
 	GET_ORG_NAME="uomAT"
-	FILE_NAME="SetupAuditTrail.csv"
+	FILE_NAME="SetupAuditTrail.csv2"
 
 	# functions
 		pause()
