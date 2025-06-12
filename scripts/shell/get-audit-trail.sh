@@ -120,8 +120,15 @@ if [[ $MODE == "download" ]]; then
 	# TODO do we convert to json? yes
 	echo -e "- Convert to JSON\n"
 	yq -p csv -o json ${FILENAME} > ${FILENAME_JSON}
-	# jq 'sort_by(.Date_str__c, .User__c, .Action__c)' ${FILENAME_JSON} > ${FILENAME_JSON}2
-	# mv ${FILENAME_JSON}2 ${FILENAME_JSON}
+
+	jq 'map(
+		if (.Action | type == "object")
+		then .Action |= (to_entries | map("\(.key): \(.value)") | join(", "))
+		else .
+		end
+	)' ${FILENAME_JSON}2
+
+	mv ${FILENAME_JSON}2 ${FILENAME_JSON}
 
 	MODE="process"
 fi
