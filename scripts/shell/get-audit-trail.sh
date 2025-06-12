@@ -4,6 +4,7 @@ SECONDS=0
 set -e
 
 ORG_NAME=""
+ORG_URL_NAME=""
 PAGE_NAME="//setup/org/orgsetupaudit.jsp?setupid=SecurityEvents"
 CURL_OPTS="-c cookiejar -L"
 CURRENT_URL=""
@@ -11,6 +12,7 @@ PREV_URL=""
 FILENAME="SetupAuditTrail.csv"
 FILENAME_JSON="$(basename -s .csv $FILENAME).json"
 AUTO_OPEN="FALSE"
+MODE="download"
 
 sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 
@@ -49,6 +51,9 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 
 				--open-file) AUTO_OPEN="TRUE";;
 
+				-m | --mode) MODE="$2"
+					shift;;
+
 				-h | --help) title
 							 echo -e $USAGE
 							 exit 0;;
@@ -75,114 +80,124 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 # end header
 
 
+
 # start here
+if [[ $MODE == "download" ]]; then
 
-# tidy
-rm -f cookiejar
+	# tidy
+	rm -f cookiejar
 
-# Get authentication URL
-echo -e "${GREEN}*${RESTORE} Get authentication URL from SFDX"
-CURRENT_URL="$(sf org open -o ${ORG_NAME} -p ${PAGE_NAME} -r --json 2> /dev/null | jq -r '.result.url' | tee url.txt)"
-echo -e "- ${CURRENT_URL}\n"
-NEXT_URL="$(curl ${CURL_OPTS} --url "$(cat url.txt)" --silent | tee curl.log | ggrep -oP -m1 "https://[\w\-\.\/\?=&%]+" | head -1)"
+	# Get authentication URL
+	echo -e "${GREEN}*${RESTORE} Get authentication URL from SFDX"
+	CURRENT_URL="$(sf org open -o ${ORG_NAME} -p ${PAGE_NAME} -r --json 2> /dev/null | jq -r '.result.url' | tee url.txt)"
+	echo -e "- ${CURRENT_URL}\n"
+	NEXT_URL="$(curl ${CURL_OPTS} --url "$(cat url.txt)" --silent | tee curl.log | ggrep -oP -m1 "https://[\w\-\.\/\?=&%]+" | head -1)"
 
-# Follow Javascript redirect, ensure cookies set are transmitted with the request
-echo -e "${GREEN}*${RESTORE} Following Javascript redirect"
-PREV_URL="${CURRENT_URL}"
-CURRENT_URL="${NEXT_URL}"
-NEXT_URL=$(curl ${CURL_OPTS} -b cookiejar -e ${PREV_URL} ${CURRENT_URL} --silent | tee curl2.log | ggrep SetupAuditTrail | ggrep -oP "href=\"/serv(.+?)\"" | head -1 | cut -d "\"" -f 2)
+	# Follow Javascript redirect, ensure cookies set are transmitted with the request
+	echo -e "${GREEN}*${RESTORE} Following Javascript redirect"
+	PREV_URL="${CURRENT_URL}"
+	CURRENT_URL="${NEXT_URL}"
+	NEXT_URL=$(curl ${CURL_OPTS} -b cookiejar -e ${PREV_URL} ${CURRENT_URL} --silent | tee curl2.log | ggrep SetupAuditTrail | ggrep -oP "href=\"/serv(.+?)\"" | head -1 | cut -d "\"" -f 2)
 
-# Find and Construct the CSV URL from PREV_URL host and CURR_URL pathname, also translate &amp; into &
-echo -e "${GREEN}*${RESTORE} Finding CSV URL and downloading"
-PREV_URL="${CURRENT_URL}"
-CURRENT_URL="$(echo -e ${PREV_URL} | ggrep -oP "https://[\w\-\.]+")${NEXT_URL}"
-CURRENT_URL="$(sed "s/\&amp;/\&/g" <<< "${CURRENT_URL}")"
-echo -e "- ${CURRENT_URL}\n"
+	# Find and Construct the CSV URL from PREV_URL host and CURR_URL pathname, also translate &amp; into &
+	echo -e "${GREEN}*${RESTORE} Finding CSV URL and downloading"
+	PREV_URL="${CURRENT_URL}"
+	CURRENT_URL="$(echo -e ${PREV_URL} | ggrep -oP "https://[\w\-\.]+")${NEXT_URL}"
+	CURRENT_URL="$(sed "s/\&amp;/\&/g" <<< "${CURRENT_URL}")"
+	echo -e "- ${CURRENT_URL}\n"
 
-# Follow the CSV link
-# FILENAME="SetupAuditTrail-${ORG_NAME}-$(date +"%d-%b-%Y").csv"
-curl ${CURL_OPTS} -b cookiejar -J -o ${FILENAME} -e ${PREV_URL} ${CURRENT_URL}
-echo ""
+	# Follow the CSV link
+	# FILENAME="SetupAuditTrail-${ORG_NAME}-$(date +"%d-%b-%Y").csv"
+	curl ${CURL_OPTS} -b cookiejar -J -o ${FILENAME} -e ${PREV_URL} ${CURRENT_URL}
+	echo ""
 
-# TODO processing
-# TODO: Not carriage return safe
-echo -e "${GREEN}*${RESTORE} Processing CSV"
-# sed -i '/"deploymentuser@ue./d' $FILENAME
-# sed -i '/"vaughan.crole@powercor.com.au.ched.uecat"/d' $FILENAME
-# sed -i '/"Manage Users"/d' $FILENAME
+	# TODO processing
+	# TODO: Not carriage return safe
+	echo -e "${GREEN}*${RESTORE} Processing CSV"
+	# sed -i '/"deploymentuser@ue./d' $FILENAME
+	# sed -i '/"vaughan.crole@powercor.com.au.ched.uecat"/d' $FILENAME
+	# sed -i '/"Manage Users"/d' $FILENAME
 
-# TODO do we convert to json? yes?
-echo -e "- Convert to JSON\n"
-yq -p csv -o json ${FILENAME} > ${FILENAME_JSON}
+	# TODO do we convert to json? yes?
+	echo -e "- Convert to JSON\n"
+	yq -p csv -o json ${FILENAME} > ${FILENAME_JSON}
 
-
-
-# Generate hash per line for External Id field
-echo -e "- Generating IDs\n"
-
+	MODE="process"
+fi
 
 
-# Iterate json
-linenum=0
-while IFS= read -u 10 -r line ; do
-	((linenum=linenum+1))
-	echo $linenum
+if [[ $MODE == "process" ]]; then
+	# Generate hash per line for External Id field
+	echo -e "- Generating Hashes\n"
+	rm -f ${FILENAME_JSON}2
+	SECONDS=0
 
-	# generate hash
-	# add key to structure
-	# add org name to structure
-	# add date string? to structure
+	ORG_URL_NAME="$(sf org display -o ${ORG_NAME} --json 2>/dev/null | jq -r '.result.instanceUrl' .orgInfo.json | cut -d "." -f 1 | cut -c 9-)"
+	# ORG_URL_NAME="ausnetservices--preprod"
+	SIZE="$(jq 'length' SetupAuditTrail.json)"
 
-	if [[ $linenum -ge 10 ]]; then
-		break;
-	fi
+	# Iterate json, process each line
+	i=0
+	while IFS= read -u 10 -r line ; do
+		((i=i+1))
+		# echo "$i : $line"
+		echo -ne "\033[2K\r"
+		echo -ne "$i / $SIZE  "
 
-done 10< <(jq -c '.[]' ${FILENAME_JSON})
+		# generate hash
+		hash="$(sha1sum <<< "$line" | cut -d " " -f 1)"
 
+		# get date str
+		datestr="$(jq -r '.Date' <<< "$line")"
 
-exit 1;
+		# add key to structure
+		jq -c ". += { hash: \"$datestr-$hash\", orgName: \"$ORG_URL_NAME\" }" <<< "$line" >> ${FILENAME_JSON}2
 
-FILENAME2="${FILENAME}2"
-rm -f $FILENAME2
-prior_line=""
-while read -r line ; do
-	((linenum=linenum+1))
-	# echo $linenum
-
-	if [[ $linenum == 1 ]]; then
-		# line 1
-			# add "Id," to start of line
-			# echo "Id,$line" > $FILENAME2
-
-		echo "Hash__c,Org_Name__c,Date_str__c,User__c,Source_Namespace_Prefix__c,Action__c,Section__c,Delegate_User__c"  > $FILENAME2
-
-	else
-		# line 2+:  compute and add hash to start of line
-
-		# Check for duplicate lines
-		if [[ "$prior_line" == "$line" ]]; then
-			continue;
+		if [[ $i -ge 100 ]]; then
+			break;
 		fi
 
-		# Some CSV rows are multiline. Need to identify these lines and process accordingly
-		# Check if line starts with reg ex....
-		if echo "$line" | grep -q -E '^"[[:digit:]]{1,2}/[[:digit:]]{1,2}/[[:digit:]]{4} [[:digit:]]{1,2}:[[:digit:]]{1,2}:[[:digit:]]{1,2} (AM|PM)",'; then
-			hash="$(echo "$line" | sha1sum | cut -d " " -f 1)"
+	done 10< <(jq -c '.[]' ${FILENAME_JSON})
+	echo ""
 
-			# get field 1 (date)
-			datestr="$(echo "$line" | cut -d "," -f 1 | tr -d '"')"
+	# Reconstruct JSON back into array
+	echo -e "- Reconstruct JSON back into array\n"
+	jq --slurp '.' ${FILENAME_JSON}2 > ${FILENAME_JSON}3
+	mv ${FILENAME_JSON}3 ${FILENAME_JSON}2
+	# cat ${FILENAME_JSON}2
+	# exit 1;
 
-			echo "\"$datestr-$hash\",${ORG_NAME},$line" >> $FILENAME2
-		else
-			echo "$line" >> $FILENAME2
+	# Rename keys
+	echo -e "- Rename keys\n"
+		# Date -> Date_str__c
+		# User -> User__c
+		# Source Namespace Prefix -> Source_Namespace_Prefix__c
+		# Action -> Action__c
+		# Section -> Section__c
+		# Delegate User -> Delegate_User__c
+		# hash -> Hash__c
+		# orgName -> Org_Name__c
+	jq 'map(
+	with_entries(
+		if .key == "Date" then .key = "Date_str__c" 
+		elif .key == "User" then .key = "User__c"
+		elif .key == "Source Namespace Prefix" then .key = "Source_Namespace_Prefix__c"
+		elif .key == "Action" then .key = "Action__c"
+		elif .key == "Section" then .key = "Section__c"
+		elif .key == "Delegate User" then .key = "Delegate_User__c"
+		elif .key == "hash" then .key = "Hash__c"
+		elif .key == "orgName" then .key = "Org_Name__c"
+		else .
+		end
+	)
+	)' ${FILENAME_JSON}2 > ${FILENAME_JSON}3
+	mv ${FILENAME_JSON}3 ${FILENAME_JSON}2
 
-		fi
-	fi
+	# convert back to CSV
+	echo -e "- convert back to CSV\n"
+	yq -p json -o csv S${FILENAME_JSON}2 > $FILENAME
+fi
 
-	prior_line="$line"
-done < $FILENAME
-
-mv $FILENAME2 $FILENAME
 
 # Auto open file
 if [[ ${AUTO_OPEN} == "TRUE" ]]; then
