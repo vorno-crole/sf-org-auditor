@@ -92,6 +92,7 @@ if [[ $MODE == "download" ]]; then
 	CURRENT_URL="$(sf org open -o ${ORG_NAME} -p ${PAGE_NAME} -r --json 2> /dev/null | jq -r '.result.url' | tee url.txt)"
 	echo -e "- ${CURRENT_URL}\n"
 	NEXT_URL="$(curl ${CURL_OPTS} --url "$(cat url.txt)" --silent | tee curl.log | ggrep -oP -m1 "https://[\w\-\.\/\?=&%]+" | head -1)"
+	rm -f url.txt
 
 	# Follow Javascript redirect, ensure cookies set are transmitted with the request
 	echo -e "${GREEN}*${RESTORE} Following Javascript redirect"
@@ -110,6 +111,7 @@ if [[ $MODE == "download" ]]; then
 	# FILENAME="SetupAuditTrail-${ORG_NAME}-$(date +"%d-%b-%Y").csv"
 	curl ${CURL_OPTS} -b cookiejar -J -o ${FILENAME} -e ${PREV_URL} ${CURRENT_URL}
 	echo ""
+	rm -f cookiejar
 
 	# TODO processing
 	# TODO: Not carriage return safe
