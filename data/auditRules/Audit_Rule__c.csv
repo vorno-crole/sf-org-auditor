@@ -1,5 +1,6 @@
 Sequence__c,Field__c,Condition__c,Value__c,Permission__c
 1,User,starts with,deployment@ausnetservices.com.au,Allow
+1.001,User,starts with,deployment@ausnet.com.au,Allow
 1.01,User,equals,Marketing Cloud,Allow
 1.02,User,equals,"salesforce.com, inc.",Allow
 1.03,User,equals,Automated Process,Allow

@@ -141,7 +141,7 @@ if [[ $MODE == "preprocess" ]]; then
 	# Get latest record from Salesforce, and trim the JSON file to only include records after that date
 	echo -e "- Find last upsert"
 	cat <<- EOF > .query.soql
-		SELECT Id, Org_Name__c, Date__c, Date_str__c, 
+		SELECT Id, Org_Name__c, Date__c, Date_str__c,
 		User__c, Source_Namespace_Prefix__c, Action__c, Section__c, Delegate_User__c, Hash__c, Status__c
 		FROM Audit_Log__c
 		WHERE Org_Name__c = '$ORG_URL_NAME'
@@ -160,7 +160,7 @@ if [[ $MODE == "preprocess" ]]; then
 		if [[ $size -gt 0 ]]; then
 
 
-			jq '.result.records[0] | del(.attributes) | 
+			jq '.result.records[0] | del(.attributes) |
 				with_entries(
 				if .value == null or .value == "null" then .value = "" else . end
 			)' data.json > data.json2 && \
@@ -234,8 +234,13 @@ if [[ $MODE == "process" ]]; then
 		# get date str
 		datestr="$(jq -r '.Date' <<< "$line")"
 
+		orgName="$(jq -r ".[] | select(.subdomain==\"$ORG_URL_NAME\") .name" org-names.json)"
+		if [[ $orgName == "" ]]; then
+			orgName="$ORG_URL_NAME"
+		fi
+
 		# add key to structure
-		jq -c ". += { hash: \"$datestr-$ORG_URL_NAME-$hash\", orgName: \"$ORG_URL_NAME\" }" <<< "$line" >> ${FILENAME_JSON}2
+		jq -c ". += { hash: \"$datestr-$ORG_URL_NAME-$hash\", orgName: \"$orgName\" }" <<< "$line" >> ${FILENAME_JSON}2
 
 		# if [[ $i -ge 10000 ]]; then
 		# 	break;
@@ -263,7 +268,7 @@ if [[ $MODE == "process" ]]; then
 		# hash -> Hash__c
 		# orgName -> Org_Name__c
 	jq 'map(with_entries(
-		if .key == "Date" then .key = "Date_str__c" 
+		if .key == "Date" then .key = "Date_str__c"
 		elif .key == "User" then .key = "User__c"
 		elif .key == "Source Namespace Prefix" then .key = "Source_Namespace_Prefix__c"
 		elif .key == "Action" then .key = "Action__c"
