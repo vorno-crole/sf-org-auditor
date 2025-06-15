@@ -5,6 +5,7 @@ set -e
 
 ORG_NAME=""
 ORG_URL_NAME=""
+REPORT_ORG_NAME=""
 PAGE_NAME="//setup/org/orgsetupaudit.jsp?setupid=SecurityEvents"
 CURL_OPTS="-c cookiejar -L"
 CURRENT_URL=""
@@ -27,7 +28,7 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 	RESTORE="\033[0m"
 	VERSION="0.2 alpha"
 	AUTHOR="vc@vaughancrole.com"
-	USAGE="$0 -o org-name [--open-file]"
+	USAGE="$0 -o org-name --reporting-org org-name [--open-file]"
 
 	# functions
 		pause()
@@ -47,6 +48,9 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 		while [ $# -gt 0 ] ; do
 			case $1 in
 				-u | -o) ORG_NAME="$2"
+					shift;;
+
+				-r | --reporting-org) REPORT_ORG_NAME="$2"
 					shift;;
 
 				--open-file) AUTO_OPEN="TRUE";;
@@ -71,6 +75,11 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 		echo -e "${WHT}$USAGE${RES}"
 		exit 1
 	fi
+	if [[ $REPORT_ORG_NAME == "" ]] ; then
+		echo -e "${RED}*** Error: ${RES}Specify your reporting org name alias. See usage:"
+		echo -e "${WHT}$USAGE${RES}"
+		exit 1
+	fi
 # end setup
 
 
@@ -79,6 +88,10 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 	echo -e "Org name: ${WHITE}${ORG_NAME}${RESTORE}\n"
 # end header
 
+
+ORG_URL_NAME="$(sf org display -o ${ORG_NAME} --json 2>/dev/null | jq -r '.result.instanceUrl' | cut -d "." -f 1 | cut -c 9-)"
+# ORG_URL_NAME="ausnetservices--preprod"
+echo -e "Org URL Name: ${ORG_URL_NAME}"
 
 
 # start here
@@ -91,14 +104,14 @@ if [[ $MODE == "download" ]]; then
 	echo -e "${GREEN}*${RESTORE} Get authentication URL from SFDX"
 	CURRENT_URL="$(sf org open -o ${ORG_NAME} -p ${PAGE_NAME} -r --json 2> /dev/null | jq -r '.result.url' | tee url.txt)"
 	echo -e "- ${CURRENT_URL}\n"
-	NEXT_URL="$(curl ${CURL_OPTS} --url "$(cat url.txt)" --silent | tee curl.log | ggrep -oP -m1 "https://[\w\-\.\/\?=&%]+" | head -1)"
+	NEXT_URL="$(curl ${CURL_OPTS} --url "$(cat url.txt)" --silent | ggrep -oP -m1 "https://[\w\-\.\/\?=&%]+" | head -1)"
 	rm -f url.txt
 
 	# Follow Javascript redirect, ensure cookies set are transmitted with the request
 	echo -e "${GREEN}*${RESTORE} Following Javascript redirect"
 	PREV_URL="${CURRENT_URL}"
 	CURRENT_URL="${NEXT_URL}"
-	NEXT_URL=$(curl ${CURL_OPTS} -b cookiejar -e ${PREV_URL} ${CURRENT_URL} --silent | tee curl2.log | ggrep SetupAuditTrail | ggrep -oP "href=\"/serv(.+?)\"" | head -1 | cut -d "\"" -f 2)
+	NEXT_URL=$(curl ${CURL_OPTS} -b cookiejar -e ${PREV_URL} ${CURRENT_URL} --silent | ggrep SetupAuditTrail | ggrep -oP "href=\"/serv(.+?)\"" | head -1 | cut -d "\"" -f 2)
 
 	# Find and Construct the CSV URL from PREV_URL host and CURR_URL pathname, also translate &amp; into &
 	echo -e "${GREEN}*${RESTORE} Finding CSV URL and downloading"
@@ -113,9 +126,76 @@ if [[ $MODE == "download" ]]; then
 	echo ""
 	rm -f cookiejar
 
+	MODE="preprocess"
+fi
+
+
+if [[ $MODE == "preprocess" ]]; then
+
 	# TODO processing
 	# TODO: Not carriage return safe
 	echo -e "${GREEN}*${RESTORE} Processing CSV"
+
+
+	# TODO
+	# Get latest record from Salesforce, and trim the JSON file to only include records after that date
+	echo -e "- Find last upsert"
+	cat <<- EOF > .query.soql
+		SELECT Id, Org_Name__c, Date__c, Date_str__c, 
+		User__c, Source_Namespace_Prefix__c, Action__c, Section__c, Delegate_User__c, Hash__c, Status__c
+		FROM Audit_Log__c
+		WHERE Org_Name__c = '$ORG_URL_NAME'
+		ORDER BY Date__c DESC
+		LIMIT 1
+	EOF
+
+	sf data query -o ${REPORT_ORG_NAME} -f .query.soql --json > data.json
+	rm -f .query.soql
+
+	# ensure status is 0
+	if [[ "$(jq -r '.status' data.json)" == "0" ]]; then
+		echo "success"
+
+		size="$(jq -r '.result.totalSize' data.json)"
+		if [[ $size -gt 0 ]]; then
+
+
+			jq '.result.records[0] | del(.attributes) | 
+				with_entries(
+				if .value == null or .value == "null" then .value = "" else . end
+			)' data.json > data.json2 && \
+			mv data.json2 data.json
+
+			# cat <<- EOF > .jq.str
+			# 	"\"" + .Date_str__c + "\",\"" + .User__c + "\",\"" + .Source_Namespace_Prefix__c + "\",\"" + .Action__c + "\",\"" + .Section__c + "\",\"" + .Delegate_User__c + "\""
+			# EOF
+			cat <<- EOF > .jq.str
+				.Date_str__c
+			EOF
+			jq -r "$(cat .jq.str)" data.json > .string
+			rm -f .jq.str
+
+			cat .string
+			LINE_NUM="$(grep -n "$(cat .string)" ${FILENAME} | cut -d : -f 1 | head -n1)"
+			echo -e "Last record found in CSV file at line: ${LINE_NUM}"
+
+			# delete lines $LINE_NUM until end of file
+			sed "${sedi[@]}" "${LINE_NUM},\$d" ${FILENAME}
+		else
+			echo "No records found in Audit Log."
+			echo "setting limit to 5000"
+			LINE_NUM=5001
+			sed "${sedi[@]}" "${LINE_NUM},\$d" ${FILENAME}
+		fi
+
+	fi
+	# exit;
+
+	# if file has only one line, then we have no data
+	if [[ $(wc -l < ${FILENAME} | grep -Eo '\d+') -le 1 ]]; then
+		echo -e "No changes found in Audit Log. Exiting."
+		exit 1
+	fi
 
 	# TODO do we convert to json? yes
 	echo -e "- Convert to JSON\n"
@@ -124,14 +204,13 @@ if [[ $MODE == "download" ]]; then
 	jq 'map(
 		if (.Action | type == "object")
 		then .Action |= (to_entries | map("\(.key): \(.value)") | join(", "))
-		else .
-		end
-	)' ${FILENAME_JSON}2
-
+		else . end
+	)' ${FILENAME_JSON} > ${FILENAME_JSON}2
 	mv ${FILENAME_JSON}2 ${FILENAME_JSON}
 
 	MODE="process"
 fi
+
 
 
 if [[ $MODE == "process" ]]; then
@@ -140,15 +219,9 @@ if [[ $MODE == "process" ]]; then
 	rm -f ${FILENAME_JSON}2
 	SECONDS=0
 
-	ORG_URL_NAME="$(sf org display -o ${ORG_NAME} --json 2>/dev/null | jq -r '.result.instanceUrl' | cut -d "." -f 1 | cut -c 9-)"
-	# ORG_URL_NAME="ausnetservices--preprod"
-	echo -e "Org URL Name: ${ORG_URL_NAME}"
-	SIZE="$(jq 'length' SetupAuditTrail.json)"
-
 	# Iterate json, process each line
 	i=0
-	prior_line=""
-	prior_count=1
+	SIZE="$(jq 'length' SetupAuditTrail.json)"
 	while IFS= read -u 10 -r line ; do
 		((i=i+1))
 		# echo "$i : $line"
@@ -162,8 +235,7 @@ if [[ $MODE == "process" ]]; then
 		datestr="$(jq -r '.Date' <<< "$line")"
 
 		# add key to structure
-		jq -c ". += { hash: \"$datestr-$hash\", orgName: \"$ORG_URL_NAME\" }" <<< "$line" >> ${FILENAME_JSON}2
-		prior_line="$line"
+		jq -c ". += { hash: \"$datestr-$ORG_URL_NAME-$hash\", orgName: \"$ORG_URL_NAME\" }" <<< "$line" >> ${FILENAME_JSON}2
 
 		# if [[ $i -ge 10000 ]]; then
 		# 	break;
@@ -190,8 +262,7 @@ if [[ $MODE == "process" ]]; then
 		# Delegate User -> Delegate_User__c
 		# hash -> Hash__c
 		# orgName -> Org_Name__c
-	jq 'map(
-	with_entries(
+	jq 'map(with_entries(
 		if .key == "Date" then .key = "Date_str__c" 
 		elif .key == "User" then .key = "User__c"
 		elif .key == "Source Namespace Prefix" then .key = "Source_Namespace_Prefix__c"
@@ -200,19 +271,15 @@ if [[ $MODE == "process" ]]; then
 		elif .key == "Delegate User" then .key = "Delegate_User__c"
 		elif .key == "hash" then .key = "Hash__c"
 		elif .key == "orgName" then .key = "Org_Name__c"
-		else .
-		end
-	)
-	)' ${FILENAME_JSON}2 > ${FILENAME_JSON}3
+		else . end
+	))' ${FILENAME_JSON}2 > ${FILENAME_JSON}3
 	mv ${FILENAME_JSON}3 ${FILENAME_JSON}2
 
 	# replace nulls with empty strings
 	echo -e "- Replace nulls with empty strings\n"
-	jq 'map(
-	with_entries(
+	jq 'map(with_entries(
 		if .value == null then .value = "" else . end
-	)
-	)' ${FILENAME_JSON}2 > ${FILENAME_JSON}3
+	))' ${FILENAME_JSON}2 > ${FILENAME_JSON}3
 	mv ${FILENAME_JSON}3 ${FILENAME_JSON}2
 
 	# convert back to CSV

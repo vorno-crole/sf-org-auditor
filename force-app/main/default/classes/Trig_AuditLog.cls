@@ -91,13 +91,18 @@ public with sharing class Trig_AuditLog extends UtilTrigHandle
 				// "7/07/2023 10:45:24 AM"
 				String dateStr = log.Date_str__c;
 
-				List<String> DT_Parts = dateStr.split(' '); // 0: date 1: time 2: am/pm
+				// TODO check string format
+
+				// 12/6/2025, 1:08:37 pm AEST
+				// String regex = '^\d{1,2}\/\d{1,2}\/\d{2,4}, \d{1,2}:\d{2}:\d{2} (am|pm) AEST';
+
+				List<String> DT_Parts = dateStr.split(' '); // 0: date 1: time 2: am/pm 3: tz
 				List<String> D_Parts = DT_Parts[0].split('/'); // 0: dd 1: mm 2: yyyy
 				List<String> T_Parts = DT_Parts[1].split(':'); // 0: h 1: m 2: ss
 
 				Integer day = Integer.valueOf(D_Parts[0]);
 				Integer mth = Integer.valueOf(D_Parts[1]);
-				Integer yr  = Integer.valueOf(D_Parts[2]);
+				Integer yr  = Integer.valueOf(D_Parts[2].removeEnd(','));
 
 				Integer hr  = Integer.valueOf(T_Parts[0]);
 				Integer min = Integer.valueOf(T_Parts[1]);

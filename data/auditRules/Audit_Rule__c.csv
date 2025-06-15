@@ -6,5 +6,6 @@ Sequence__c,Field__c,Condition__c,Value__c,Permission__c
 1.04,User,equals,Vlocity CMT,Allow
 1.05,User,starts with,mc-connect-crm@ausnetservices.com.au,Allow
 2,Section,equals,Manage Users,Allow
+2.01,Section,equals,Customer Portal,Allow
 3,Action,starts with,Changed membership of Group Customer Connections,Allow
 999,,catch all,,Deny
