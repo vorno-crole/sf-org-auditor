@@ -182,6 +182,7 @@ if [[ $MODE == "preprocess" ]]; then
 			cat .string
 			LINE_NUM="$(grep -n "$(cat .string)" ${FILENAME} | cut -d : -f 1 | head -n1)"
 			echo -e "Last record found in CSV file at line: ${LINE_NUM}"
+			rm .string
 
 			# delete lines $LINE_NUM until end of file
 			sed "${sedi[@]}" "${LINE_NUM},\$d" ${FILENAME}
