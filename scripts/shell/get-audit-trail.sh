@@ -195,6 +195,7 @@ if [[ $MODE == "preprocess" ]]; then
 
 	fi
 	# exit;
+	rm data.json
 
 	# if file has only one line, then we have no data
 	if [[ $(wc -l < ${FILENAME} | grep -Eo '\d+') -le 1 ]]; then
