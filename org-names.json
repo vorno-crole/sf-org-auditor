@@ -1,0 +1,22 @@
+[
+	{
+		"name": "SIT",
+		"subdomain": "company--sit",
+		"alias": "companySIT"
+	},
+	{
+		"name": "UAT",
+		"subdomain": "company--uat",
+		"alias": "companyUAT"
+	},
+	{
+		"name": "Staging",
+		"subdomain": "company--staging",
+		"alias": "companyStaging"
+	},
+	{
+		"name": "Prod",
+		"subdomain": "company",
+		"alias": "companyProd"
+	}
+]
