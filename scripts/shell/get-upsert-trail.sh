@@ -106,6 +106,8 @@ for GET_ORG_NAME in "${ALL_ORGS[@]}" ; do
 	scripts/shell/upsert-audit-trail.sh -o ${UPSERT_ORG_NAME} --filename ${FILE_NAME}
 done
 
+rm -f SetupAuditTrail.csv*
+rm -f SetupAuditTrail.json*
 
 echo -e "${GRN}Success.${RES} Complete."
 echo -e "\nTime taken: ${SECONDS} seconds."
