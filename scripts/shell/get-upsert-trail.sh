@@ -13,7 +13,7 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 	RES="\033[0m"
 	VERSION="1.0"
 	SCRIPT_NAME="Get and Upsert Audit Trail CSV"
-	USAGE="$0 --source org-name -o target-org-name"
+	USAGE="$0 -o target-org-name (--source org-name | --all)"
 
 	UPSERT_ORG_NAME=""
 	GET_ORG_NAME=""
@@ -85,7 +85,7 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 		echo -e "Source Org name: ${WHT}${GET_ORG_NAME}${RES}"
 		ALL_ORGS=("${GET_ORG_NAME}")
 	else
-		echo -e "Source Org name: ${WHT}All orgs in ${ALL_ORGS[*]}${RES}"
+		echo -e "Source Org name: ${GRN}All orgs in ${WHT}${ALL_ORGS[*]}${RES}"
 	fi
 
 	echo -e "Upsert Org name: ${WHT}${UPSERT_ORG_NAME}${RES}"
