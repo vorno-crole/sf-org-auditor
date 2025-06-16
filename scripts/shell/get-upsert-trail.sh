@@ -19,7 +19,6 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 	GET_ORG_NAME=""
 	FILE_NAME="SetupAuditTrail.csv2"
 	MODE="normal"
-	# ALL_ORGS=(deployUomSIT deployUomPreprod deployUomStaging deployUomProd)
 	ALL_ORGS=()
 
 	# functions
