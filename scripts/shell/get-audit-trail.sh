@@ -93,6 +93,10 @@ ORG_URL_NAME="$(sf org display -o ${ORG_NAME} --json 2>/dev/null | jq -r '.resul
 # ORG_URL_NAME="ausnetservices--preprod"
 echo -e "Org URL Name: ${ORG_URL_NAME}"
 
+orgName="$(jq -r ".[] | select(.subdomain==\"$ORG_URL_NAME\") .name" org-names.json)"
+if [[ $orgName == "" ]]; then
+	orgName="$ORG_URL_NAME"
+fi
 
 # start here
 if [[ $MODE == "download" ]]; then
@@ -144,7 +148,7 @@ if [[ $MODE == "preprocess" ]]; then
 		SELECT Id, Org_Name__c, Date__c, Date_str__c,
 		User__c, Source_Namespace_Prefix__c, Action__c, Section__c, Delegate_User__c, Hash__c, Status__c
 		FROM Audit_Log__c
-		WHERE Org_Name__c = '$ORG_URL_NAME'
+		WHERE Org_Name__c = '$orgName'
 		ORDER BY Date__c DESC
 		LIMIT 1
 	EOF
@@ -233,11 +237,6 @@ if [[ $MODE == "process" ]]; then
 
 		# get date str
 		datestr="$(jq -r '.Date' <<< "$line")"
-
-		orgName="$(jq -r ".[] | select(.subdomain==\"$ORG_URL_NAME\") .name" org-names.json)"
-		if [[ $orgName == "" ]]; then
-			orgName="$ORG_URL_NAME"
-		fi
 
 		# add key to structure
 		jq -c ". += { hash: \"$datestr-$ORG_URL_NAME-$hash\", orgName: \"$orgName\" }" <<< "$line" >> ${FILENAME_JSON}2
