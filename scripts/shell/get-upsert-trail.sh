@@ -19,7 +19,8 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 	GET_ORG_NAME=""
 	FILE_NAME="SetupAuditTrail.csv2"
 	MODE="normal"
-	ALL_ORGS=(deployUomSIT deployUomPreprod deployUomStaging deployUomProd)
+	# ALL_ORGS=(deployUomSIT deployUomPreprod deployUomStaging deployUomProd)
+	ALL_ORGS=()
 
 	# functions
 		pause()
@@ -45,7 +46,11 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 				--source | -s) GET_ORG_NAME="$2"
 					shift;;
 
-				--all) MODE="all";;
+				--all) MODE="all"
+					# load all orgs into the array
+					while IFS= read -u 10 -r alias; do
+						ALL_ORGS+=("$alias")
+					done 10< <(jq -r '.[] .alias' org-names.json);;
 
 				-h | --help) title
 							 echo -e $USAGE

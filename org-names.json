@@ -1,18 +1,22 @@
 [
 	{
-		"name": "Prod",
-		"subdomain": "ausnetservices"
+		"name": "SIT",
+		"subdomain": "ausnetservices--situom",
+		"alias": "deployUomSIT"
 	},
 	{
 		"name": "UAT",
-		"subdomain": "ausnetservices--preprod"
+		"subdomain": "ausnetservices--preprod",
+		"alias": "deployUomPreprod"
 	},
 	{
 		"name": "Staging",
-		"subdomain": "ausnetservices--staging"
+		"subdomain": "ausnetservices--staging",
+		"alias": "deployUomStaging"
 	},
 	{
-		"name": "SIT",
-		"subdomain": "ausnetservices--situom"
+		"name": "Prod",
+		"subdomain": "ausnetservices",
+		"alias": "deployUomProd"
 	}
 ]
