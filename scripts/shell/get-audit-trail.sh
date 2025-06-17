@@ -207,7 +207,7 @@ if [[ $MODE == "preprocess" ]]; then
 	rm data.json
 
 	# if file has only one line, then we have no data
-	if [[ $(wc -l < ${FILENAME} | grep -Eo '\d+') -le 1 ]]; then
+	if [[ $(wc -l < ${FILENAME} | grepp -Po '\d+') -le 1 ]]; then
 		echo -e "No changes found in Audit Log. Exiting."
 		exit 1
 	fi
