@@ -12,7 +12,7 @@ public with sharing class Rule_Processor
 
 	// ************************************************
 	// *** Member vars
-	public enum Permission {ALLOW, DENY}
+	public enum Permission {ALLOW, DENY, FLAG_DELETE}
 
 	private List<Audit_Rule__c> rules;
 	private static Rule_Processor RP;
@@ -132,6 +132,7 @@ public with sharing class Rule_Processor
 
 		if (strPerm == 'Allow') return Permission.ALLOW;
 		if (strPerm == 'Deny') return Permission.DENY;
+		if (strPerm == 'Delete') return Permission.FLAG_DELETE;
 		return null;
 	}
 }

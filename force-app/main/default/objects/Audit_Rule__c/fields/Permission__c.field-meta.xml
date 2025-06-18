@@ -20,6 +20,11 @@
                 <default>false</default>
                 <label>Deny</label>
             </value>
+            <value>
+                <fullName>Delete</fullName>
+                <default>false</default>
+                <label>Delete</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

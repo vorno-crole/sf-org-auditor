@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>All_Audit_Logs_Prod</fullName>
+    <columns>NAME</columns>
+    <columns>Date__c</columns>
+    <columns>Org_Name__c</columns>
+    <columns>User__c</columns>
+    <columns>Section__c</columns>
+    <columns>Action__c</columns>
+    <columns>Status__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Org_Name__c</field>
+        <operation>equals</operation>
+        <value>Prod</value>
+    </filters>
+    <label>All Audit Logs - Prod</label>
+</ListView>

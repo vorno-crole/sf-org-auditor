@@ -23,10 +23,19 @@ public with sharing class Trig_AuditLog extends UtilTrigHandle
 		checkApplyRules((List<Audit_Log__c>)newSObjs.values());
 	}
 
+	public override void AfterInsert(Map<Id, SObject> newSObjs)
+	{
+		checkDeletionStatus(newSObjs.values());
+	}
+
+	public override void AfterUpdate(Map<Id, SObject> newSObjs, Map<Id, SObject> oldSObjs)
+	{
+		checkDeletionStatus(newSObjs.values());
+	}
+
+
 	// if context is not implemented, condense into one-liners
 	public override void BeforeDelete(Map<Id, SObject> oldSObjs) {}
-	public override void AfterInsert(Map<Id, SObject> newSObjs) {}
-	public override void AfterUpdate(Map<Id, SObject> newSObjs, Map<Id, SObject> oldSObjs) {}
 	public override void AfterDelete(Map<Id, SObject> oldSObjs) {}
 	public override void AfterUndelete(Map<Id, SObject> oldSObjs) {}
 
@@ -76,6 +85,11 @@ public with sharing class Trig_AuditLog extends UtilTrigHandle
 				// this is less than ok
 				newStatus = AL_Strings.LOG_STATUS_BAD;
 			}
+			else if (perm == Rule_Processor.Permission.FLAG_DELETE)
+			{
+				// this is less than ok
+				newStatus = AL_Strings.LOG_STATUS_DEL;
+			}
 
 			log.Status__c = newStatus;
 		}
@@ -116,5 +130,36 @@ public with sharing class Trig_AuditLog extends UtilTrigHandle
 				log.Date__c = dt;
 			}
 		}
+	}
+
+	@testvisible private void checkDeletionStatus(List<Audit_Log__c> logItems)
+	{
+		if (logItems == null || logItems.isEmpty()) return;
+
+		// check if any records are flagged for deletion
+		Set<Id> delIds = new Set<Id>();
+
+		for (Audit_Log__c log: logItems)
+			if (log.Status__c == AL_Strings.LOG_STATUS_DEL)
+				delIds.add(log.Id);
+
+		if (!delIds.isEmpty())
+			deleteRecords(delIds);
+	}
+
+	@testvisible @future private static void deleteRecords(Set<Id> delIds)
+	{
+		if (delIds == null || delIds.isEmpty()) return;
+
+		List<SObject> delSObjs = new List<SObject>();
+
+		for (Id sobjId: delIds)
+		{
+			SObject sobj = sobjId.getSObjectType().newSObject(sobjId);
+			delSObjs.add(sobj);
+		}
+
+		if (!delSObjs.isEmpty())
+			delete delSObjs;
 	}
 }
