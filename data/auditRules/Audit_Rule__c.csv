@@ -1,11 +1,14 @@
 Sequence__c,Field__c,Condition__c,Value__c,Permission__c
-1,User,starts with,deployment@mycompany.com,Allow
+1,User,starts with,deployment@ausnetservices.com.au,Allow
+1.001,User,starts with,deployment@ausnet.com.au,Allow
 1.01,User,equals,Marketing Cloud,Allow
 1.02,User,equals,"salesforce.com, inc.",Allow
 1.03,User,equals,Automated Process,Allow
 1.04,User,equals,Vlocity CMT,Allow
+1.05,User,starts with,mc-connect-crm@ausnetservices.com.au,Allow
 2.01,Action,starts with,Changed permission set,Deny
 2.02,Action,starts with,Changed profile,Deny
 2.99,Section,equals,Manage Users,Allow
 3,Section,equals,Customer Portal,Allow
+4,Action,starts with,Changed membership of Group Customer Connections,Delete
 999,,catch all,,Deny
