@@ -19,6 +19,7 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 	GET_ORG_NAME=""
 	FILE_NAME="SetupAuditTrail.csv2"
 	MODE="normal"
+	OPEN_ORG="FALSE"
 	ALL_ORGS=()
 
 	# functions
@@ -50,6 +51,8 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 					while IFS= read -u 10 -r alias; do
 						ALL_ORGS+=("$alias")
 					done 10< <(jq -r '.[] .alias' org-names.json);;
+
+				--open) OPEN_ORG="TRUE";;
 
 				-h | --help) title
 							 echo -e $USAGE
@@ -111,4 +114,9 @@ rm -f SetupAuditTrail.json*
 
 echo -e "${GRN}Success.${RES} Complete."
 echo -e "\nTime taken: ${SECONDS} seconds."
+
+if [[ ${OPEN_ORG} == "TRUE" ]] ; then
+	sf org open -o ${UPSERT_ORG_NAME} -p '/lightning/o/Audit_Log__c/home'
+fi
+
 exit 0;
