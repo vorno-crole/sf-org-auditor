@@ -101,6 +101,12 @@
                         <type>detail</type>
                     </flexTableColumn>
                     <flexTableColumn>
+                        <reportColumn>Audit_Log__c.Org_Name__c</reportColumn>
+                        <showSubTotal>false</showSubTotal>
+                        <showTotal>false</showTotal>
+                        <type>detail</type>
+                    </flexTableColumn>
+                    <flexTableColumn>
                         <reportColumn>Audit_Log__c.User__c</reportColumn>
                         <showSubTotal>false</showSubTotal>
                         <showTotal>false</showTotal>
