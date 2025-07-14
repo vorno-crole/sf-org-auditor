@@ -1,0 +1,135 @@
+name: SF-Auditor
+
+on:
+  workflow_dispatch:
+    inputs:
+      Audit_Log_Id:
+        description: 'Audit Log Record Id'
+        type: string
+        required: true
+
+defaults:
+  run:
+    shell: bash -e {0}
+
+jobs:
+  action-audit-log:
+    runs-on: ubuntu-latest
+    container: docker://ghcr.io/vorno-crole/sfdx-dock:1.04
+
+    timeout-minutes: 200
+    # continue-on-error: true
+
+    steps:
+      - name: Setup env
+        run: |
+          node -v
+          # chmod +x ci/*.sh;
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global user.email "GHworkflow@github.com"
+          git config --global user.name "GHWorkflow"
+          # echo "GIT_DISCOVERY_ACROSS_FILESYSTEM=1" >> $GITHUB_ENV
+          echo "AUDIT_LOG_ID="${{ github.event.inputs.Audit_Log_Id }}"" >> $GITHUB_ENV
+
+      - name: Authenticate Auditor Org
+        run: |
+          echo "${{ secrets.SF_AUDITOR_ORG }}" | \
+          sf force auth sfdxurl store --sfdx-url-stdin - --alias AuditorOrg --json | tee sfAuth.log
+
+      - name: Query Audit Log
+        run: |
+          echo "Audit Log Id: ${AUDIT_LOG_ID}"
+
+          cat <<- EOF > auditLogQuery.sql
+            SELECT Id, Name, Action__c, Date__c, Date_str__c, Delegate_User__c, Hash__c, Org_Name__c, OwnerId, Owner.Name,
+            Resolution_Actions__c, Section__c, Source_Namespace_Prefix__c, Status__c, User__c
+            FROM Audit_Log__c
+            WHERE Id = '${AUDIT_LOG_ID}'
+          EOF
+
+          sf data query --target-org AuditorOrg --file auditLogQuery.sql --json | tee auditLog.json
+
+      - name: Determine Action
+        id: action
+        run: |
+          RES_ACTIONS=$(jq -r '.result.records[0].Resolution_Actions__c' auditLog.json)
+          echo "RES_ACTIONS="${RES_ACTIONS}"" >> $GITHUB_ENV
+
+          echo "Resolution Actions: $RES_ACTIONS"
+
+          # split action var by ;
+          IFS=';' read -ra ARR_ACTIONS <<< "$RES_ACTIONS"
+
+          # iterate over actions and use case statement to determine action
+          for action in "${ARR_ACTIONS[@]}"; do
+            case "$action" in
+              "Restore component from source control")
+                echo "action=Restore component"
+                echo "action=restore" >> $GITHUB_ENV;;
+
+              *)
+                echo "asterisk : action=$action";;
+            esac
+          done
+
+      - uses: actions/checkout@v4
+        if: contains(env.RES_ACTIONS, 'Restore component from source control')
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Restore components
+        if: contains(env.RES_ACTIONS, 'Restore component from source control')
+        run: |
+          echo "Restoring components from source control..."
+
+          # Authenticate into dest org
+          OrgName=$(jq -r '.result.records[0].Org_Name__c' auditLog.json)
+          echo "* Authenticating into destination org: $OrgName"
+
+          case "$OrgName" in
+            "Prod")    DestOrgURL="${{ secrets.SFDX_AUTH_MASTER_URL }}";;
+            "Staging") DestOrgURL="${{ secrets.SFDX_AUTH_STAGING }}";;
+            "UAT")     DestOrgURL="${{ secrets.SFDX_AUTH_UAT_URL }}";;
+            "SIT")     DestOrgURL="${{ secrets.SFDX_AUTH_VALIDATION_URL }}";;
+            *) echo "Unknown org name: $OrgName"; exit 1;;
+          esac
+
+          echo "$DestOrgURL}" | \
+          sf force auth sfdxurl store --sfdx-url-stdin - --alias $OrgName --json | tee sfDestAuth.log
+
+          # Get details from audit log
+          Section=$(jq -r '.result.records[0].Section__c' auditLog.json) # Apex Class
+          Action=$(jq -r '.result.records[0].Action__c' auditLog.json) # Changed UpsertAssetRecords Apex Class code
+          echo "* Section: $Section"
+          echo "* Action: $Action"
+
+          # Get the component name from Section/Action
+          case "$Section" in
+            "Apex Class")
+              CompName="$(sed -E 's/Changed //; s/ Apex Class code//;' <<< "$Action").cls"
+            *) echo "Unknown section: $Section"; exit 1;;
+          esac
+
+          echo "* Component Name: $CompName";;
+
+          # Get the component file name and path
+          CompFilePath=$(find force-app -type f -name "$CompName" | head -n 1)
+          echo "* Component File Path: $CompFilePath"
+
+          # Run sf project deploy start
+          sf project deploy start --dry-run --target-org "$OrgName" \
+          --source-path "$CompFilePath" \
+          --ignore-conflicts --json | tee deployResult.json
+
+          # Record outcome on log record
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: log-files
+          path: |
+            auditLog.json
+            deployResult.json
+            sfAuth.log
+            sfDestAuth.log
+          if-no-files-found: ignore
+          retention-days: 7
