@@ -50,7 +50,7 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 					# load all orgs into the array
 					while IFS= read -u 10 -r alias; do
 						ALL_ORGS+=("$alias")
-					done 10< <(jq -r '.[] .alias' org-names.json);;
+					done 10< <(jq -r '.[] | select(.audited==true) | .alias' org-names.json);;
 
 				--open) OPEN_ORG="TRUE";;
 
@@ -75,9 +75,14 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 	fi
 
 	if [[ $UPSERT_ORG_NAME == "" ]] ; then
-		echo -e "${RED}*** Error: ${RES}Specify your reporting org name alias. See usage:"
-		echo -e "${WHT}$USAGE${RES}"
-		exit 1
+		# Get the org name from the config json
+		UPSERT_ORG_NAME=$(jq -r '.[] | select(.reportOrg==true) | .alias' org-names.json)
+
+		if [[ $UPSERT_ORG_NAME == "" ]] ; then
+			echo -e "${RED}*** Error: ${RES}Specify your reporting org name alias. See usage:"
+			echo -e "${WHT}$USAGE${RES}"
+			exit 1
+		fi
 	fi
 # end setup
 
