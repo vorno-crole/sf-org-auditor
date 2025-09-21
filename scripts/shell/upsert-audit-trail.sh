@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 SECONDS=0
 sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 

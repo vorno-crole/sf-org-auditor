@@ -1,3 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-scripts/shell/get-upsert-trail.sh "$@"
+DEFAULT_ARGS="--all --open"
+
+scripts/shell/get-upsert-trail.sh $DEFAULT_ARGS "$@"
