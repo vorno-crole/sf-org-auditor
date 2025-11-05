@@ -27,13 +27,11 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 		{
 			read -p "Press Enter to continue."
 		}
-		export -f pause
 
 		title()
 		{
 			echo -e "${GRN}*** ${WHT}${SCRIPT_NAME} script v${VERSION}${RES}\nby ${GRN}vc@vaughancrole.com${RES}\n"
 		}
-		export -f title
 	# end functions
 
 	# read args
@@ -87,6 +85,13 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 # end setup
 
 
+
+createReportingOrg()
+{
+	local org_name="$1"
+	config/create-scr.sh -o $org_name --skip-open
+}
+
 # header
 	title
 	if [[ ${MODE} == "normal" ]] ; then
@@ -102,6 +107,37 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 cd "$(dirname "$BASH_SOURCE")"
 cd ../..
 
+# Check that Upsert Org exists.
+# and if not, dynamically build a new one 
+
+sf org display -o ${UPSERT_ORG_NAME} --json > .checkorg.json
+cmd_status=$(jq -r '.status' .checkorg.json)
+org_status=$(jq -r '.result.status' .checkorg.json)
+echo -e "Upsert Org status: ${WHT}${org_status}${RES}"
+rm -f .checkorg.json
+
+if [[ $cmd_status -ne 0 ]]; then
+	# display error
+	echo -e "\n${YLW}Org alias not found. (Re)building Upsert org...${RES}"
+	sf alias unset ${UPSERT_ORG_NAME}
+	createReportingOrg ${UPSERT_ORG_NAME}
+	pause
+
+elif [[ $org_status == 'Active' ]]; then
+	echo -e "\n${YLW}Upsert Org is active.${RES}"
+
+elif [[ $org_status == 'Deleted' ]]; then
+	# rebuild.
+	echo -e "\n${YLW}Org has expired. (Re)building Upsert org...${RES}"
+	sf alias unset ${UPSERT_ORG_NAME}
+	createReportingOrg ${UPSERT_ORG_NAME}
+	pause
+
+else
+	echo -e "\n${YLW}Org is unknown status: ${WHT}${org_status}.${RES}"
+	exit 1;
+
+fi
 
 
 # loop through all orgs if --all is specified
@@ -125,3 +161,4 @@ if [[ ${OPEN_ORG} == "TRUE" ]] ; then
 fi
 
 exit 0;
+

@@ -13,6 +13,7 @@
 	USAGE="$0 -o <org-name>"
 	ORG_NAME=""
 	DEV_HUB=""
+	OPEN_ORG="true"
 
 	SCRATCH_DEF="config/project-scratch-def.json"
 
@@ -35,6 +36,8 @@
 
 			--devhub | -d) DEV_HUB="$2"
 				shift;;
+
+			--skip-open | -no) OPEN_ORG="false";;
 
 			-h | --help) title
 						 echo -e "$USAGE"
@@ -85,7 +88,9 @@ sf project deploy start -o ${ORG_NAME}
 data/import-all.sh -o ${ORG_NAME}
 
 # open org
-sf org open -o ${ORG_NAME}
+if [[ $OPEN_ORG == "true" ]]; then
+	sf org open -o ${ORG_NAME}
+fi
 
 
 echo -e "${GREEN}Success.${RESTORE} Complete."
