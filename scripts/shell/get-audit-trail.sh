@@ -37,6 +37,23 @@ sedi=(-i) && [ "$(uname)" == "Darwin" ] && sedi=(-i '')
 		}
 		export -f pause
 
+		confirm()
+		{
+			echo -ne "${WHT}"
+			read -n 1 -p "Do you wish to continue (y/n)? " choice
+			echo -e "${RES}"
+			case "$choice" in
+				y|Y) echo -e "Yes.\n";;
+
+				n|N) echo -e "No."
+					exit 0;;
+
+				*) echo -e "${RED}* Error: ${RES}Invalid input."
+				exit 1;;
+			esac
+		}
+		export -f confirm
+
 		title()
 		{
 			echo -e "${GREEN}*** ${WHITE}Get Audit Trail CSV script v${VERSION}${RESTORE}\nby ${GREEN}${AUTHOR}${RESTORE}\n"
@@ -142,6 +159,28 @@ if [[ $MODE == "download" ]]; then
 
 	MODE="preprocess"
 fi
+
+
+if [[ $MODE == "download2" ]]; then
+
+	# Date,User,Source Namespace Prefix,Action,Section,Delegate User
+	cat <<- EOF > SetupAuditTrail.query
+		SELECT Id, CreatedDate, CreatedById, CreatedBy.Name, ResponsibleNamespacePrefix, Action, Section, Display, DelegateUser
+		FROM SetupAuditTrail
+		ORDER BY Date DESC
+		LIMIT 5000
+	EOF
+
+	# Run the query
+	echo -e "${GREEN}*${RESTORE} Running Setup Audit Trail query"
+	sf data query -o ${ORG_NAME} -f SetupAuditTrail.query --result-format csv --output-file ${FILENAME}
+	rm -f SetupAuditTrail.query
+
+	MODE="preprocess"
+	echo -e "\n* About to start the preprocess step"
+	confirm
+fi
+
 
 
 if [[ $MODE == "preprocess" ]]; then
