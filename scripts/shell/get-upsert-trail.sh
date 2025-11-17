@@ -90,6 +90,9 @@ createReportingOrg()
 {
 	local org_name="$1"
 	config/create-scr.sh -o $org_name --skip-open
+
+	# TODO: Save the sfdx auth url to gh secrets
+	
 }
 
 # header
@@ -121,7 +124,7 @@ if [[ $cmd_status -ne 0 ]]; then
 	echo -e "\n${YLW}Org alias not found. (Re)building Upsert org...${RES}"
 	sf alias unset ${UPSERT_ORG_NAME}
 	createReportingOrg ${UPSERT_ORG_NAME}
-	pause
+	# pause
 
 elif [[ $org_status == 'Active' ]]; then
 	echo -e "\n${YLW}Upsert Org is active.${RES}"
@@ -131,7 +134,7 @@ elif [[ $org_status == 'Deleted' ]]; then
 	echo -e "\n${YLW}Org has expired. (Re)building Upsert org...${RES}"
 	sf alias unset ${UPSERT_ORG_NAME}
 	createReportingOrg ${UPSERT_ORG_NAME}
-	pause
+	# pause
 
 else
 	echo -e "\n${YLW}Org is unknown status: ${WHT}${org_status}.${RES}"
