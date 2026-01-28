@@ -4,6 +4,7 @@ Sequence__c,Field__c,Condition__c,Value__c,Permission__c
 1.01,User,equals,Marketing Cloud,Allow
 1.02,User,equals,"salesforce.com, inc.",Allow
 1.03,User,equals,Automated Process,Allow
+1.031,User,equals,Salesforce Standard Data Model,Allow
 1.04,User,equals,Vlocity CMT,Allow
 1.041,User,equals,CloudFiles,Allow
 1.05,User,starts with,mc-connect-crm@ausnetservices.com.au,Allow
@@ -11,5 +12,6 @@ Sequence__c,Field__c,Condition__c,Value__c,Permission__c
 2.02,Action,starts with,Changed profile,Deny
 2.99,Section,equals,Manage Users,Allow
 3,Section,equals,Customer Portal,Allow
-4,Action,starts with,Changed membership of Group Customer Connections,Delete
+4.001,Action,starts with,Changed membership of Group Customer Connections,Delete
+4.002,Action,starts with,Changed membership of Group,Allow
 999,,catch all,,Deny
