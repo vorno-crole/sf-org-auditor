@@ -135,14 +135,30 @@ if [[ $MODE == "download" ]]; then
 	echo -e "${GREEN}*${RESTORE} Get authentication URL from SFDX"
 	CURRENT_URL="$(sf org open -o ${ORG_NAME} -p ${PAGE_NAME} -r --json 2> /dev/null | jq -r '.result.url' | tee url.txt)"
 	echo -e "- ${CURRENT_URL}\n"
-	NEXT_URL="$(curl ${CURL_OPTS} --url "$(cat url.txt)" --silent | grepp -oP -m1 "https://[\w\-\.\/\?=&%]+" | head -1)"
+
+	curl ${CURL_OPTS} --url "$(cat url.txt)" > nextUrl.txt
+	NEXT_URL="$(grepp -oP -m1 "https://[\w\-\.\/\?=&%]+" nextUrl.txt | head -1)"
+	# echo "NEXT_URL: $NEXT_URL"
+	# pause
 	rm -f url.txt
 
 	# Follow Javascript redirect, ensure cookies set are transmitted with the request
-	echo -e "${GREEN}*${RESTORE} Following Javascript redirect"
+	echo -e "${GREEN}*${RESTORE} Following Javascript redirect (1)"
 	PREV_URL="${CURRENT_URL}"
 	CURRENT_URL="${NEXT_URL}"
-	NEXT_URL=$(curl ${CURL_OPTS} -b cookiejar -e ${PREV_URL} ${CURRENT_URL} --silent | grepp SetupAuditTrail | grepp -oP "href=\"/serv(.+?)\"" | head -1 | cut -d "\"" -f 2)
+	curl ${CURL_OPTS} -b cookiejar -e ${PREV_URL} ${CURRENT_URL} --silent > nextUrl.txt
+	# pause
+	NEXT_URL=$(grepp orgsetupaudit nextUrl.txt | grepp -oP 'href="(.+?)"' | head -1 | cut -d'"' -f2)
+	# echo "NEXT_URL: $NEXT_URL"
+	
+
+	echo -e "${GREEN}*${RESTORE} Following Javascript redirect (2)"
+	PREV_URL="${CURRENT_URL}"
+	CURRENT_URL="${NEXT_URL}"
+	curl ${CURL_OPTS} -b cookiejar -e ${PREV_URL} ${CURRENT_URL} --silent > nextUrl.txt
+	# pause
+	NEXT_URL=$(grepp SetupAuditTrail nextUrl.txt | grepp -oP "href=\"/serv(.+?)\"" | head -1 | cut -d "\"" -f 2)
+	# echo "NEXT_URL: $NEXT_URL"
 
 	# Find and Construct the CSV URL from PREV_URL host and CURR_URL pathname, also translate &amp; into &
 	echo -e "${GREEN}*${RESTORE} Finding CSV URL and downloading"

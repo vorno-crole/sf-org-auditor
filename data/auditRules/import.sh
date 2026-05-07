@@ -50,7 +50,6 @@ source options.sh
 		echo -e "${GREEN}*** ${WHITE}Multi-Object ${OPERATION} script v${VERSION}${RESTORE}"
 		echo -e "by ${GREEN}${AUTHOR}${RESTORE}\n"
 	}
-	export -f title
 # Setup
 
 title
@@ -83,7 +82,7 @@ do
 
 	echo "- $OBJ_NAME: Upserting... "
 
-	sfdx force:data:bulk:upsert -s "${OBJ_NAME}" -f "${CSV_NAME}" -i "${UPSERT_FLD}" -u ${ORG_NAME} -w 15 --json > output
+	sf data upsert bulk -s "${OBJ_NAME}" -f "${CSV_NAME}" -i "${UPSERT_FLD}" -u ${ORG_NAME} -w 15 --json > output
 	ERROR_CODE=$?
 
 	if [ $ERROR_CODE -ne 0 ]; then

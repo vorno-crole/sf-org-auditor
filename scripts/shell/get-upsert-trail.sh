@@ -113,7 +113,7 @@ cd ../..
 # Check that Upsert Org exists.
 # and if not, dynamically build a new one 
 
-sf org display -o ${UPSERT_ORG_NAME} --json > .checkorg.json
+sf org display -o ${UPSERT_ORG_NAME} --json > .checkorg.json || true
 cmd_status=$(jq -r '.status' .checkorg.json)
 org_status=$(jq -r '.result.status' .checkorg.json)
 echo -e "Upsert Org status: ${WHT}${org_status}${RES}"
