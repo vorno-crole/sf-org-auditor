@@ -3,13 +3,13 @@
 		"name": "SIT",
 		"subdomain": "ausnetservices--situom",
 		"alias": "deployUomSIT",
-		"audited": true
+		"audited": false
 	},
 	{
 		"name": "UAT",
 		"subdomain": "ausnetservices--preprod",
 		"alias": "deployUomPreprod",
-		"audited": true
+		"audited": false
 	},
 	{
 		"name": "Staging",
@@ -21,7 +21,7 @@
 		"name": "Prod",
 		"subdomain": "ausnetservices",
 		"alias": "deployUomProd",
-		"audited": true
+		"audited": false
 	},
 	{
 		"name": "Reporting org",

@@ -149,7 +149,7 @@ for GET_ORG_NAME in "${ALL_ORGS[@]}" ; do
 		echo -e "\n${YLW}Getting audit trail for ${GET_ORG_NAME}${RES}"
 	fi
 
-	scripts/shell/get-audit-trail.sh -o ${GET_ORG_NAME} -r ${UPSERT_ORG_NAME} "$@" || continue;
+	scripts/shell/get-audit-trail-new.sh -o ${GET_ORG_NAME} -r ${UPSERT_ORG_NAME} -m download2 "$@" || continue;
 	scripts/shell/upsert-audit-trail.sh -o ${UPSERT_ORG_NAME} --filename ${FILE_NAME}
 done
 
